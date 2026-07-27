@@ -247,28 +247,14 @@ style="position:fixed; top:10px; left:10px; z-index:1000; display:none;">
     <button id="prevPage">⬅ Previous<br>上一页</button>
     <button id="nextPage">Next Page ➜<br>下一页</button>
 </div>
-    
+
 <script>
-let currentDayKey = getDayKey();
- 
-function getDayKey() {
-    const now = new Date();
-
-    // Treat 1:00 AM as the start of a new tracking day
-    if (now.getHours() < 1) {
-        now.setDate(now.getDate() - 1);
-    }
-
-    return now.toISOString().split("T")[0];
-}    
-   
 
 
 const diaper = ["Pee/尿尿","Poop/大便"];
 
 let pages=[];
 let currentPage=0;
-let dayLocked = false;
 
 function updateAddButton() {
     document.getElementById("add").style.display = "inline-block";
@@ -558,33 +544,7 @@ table.querySelector(".poopStatus").innerHTML =
     + "<br>今天大便" + poopCount + "次。";
 }
 
-function checkNewDay() {
-
-    const newDayKey = getDayKey();
-
-    if (newDayKey !== currentDayKey) {
-
-        currentDayKey = newDayKey;
-        dayLocked = true;
-
-        document.getElementById("add").disabled = true;
-
-        alert(
-            "🌸 New day, new memories! 🌸\n\n" +
-            "It's after 1:00 AM.\n\n" +
-            "This page is now complete.\n\n" +
-            "💕 Please tap 'Next Page' to continue today's feeding tracker."
-        );
-    }
-}
-
 function addRow(){
-    
-    checkNewDay();
-
-if (dayLocked) {
-    return;
-}
 
     let tbody = pages[currentPage].querySelector("tbody");
 
@@ -658,17 +618,17 @@ setTimeout(() => {
 document.getElementById("add").onclick = addRow;
 document.getElementById("nextPage").onclick = function () {
 
+    // Create a new page
     createPage();
 
-    dayLocked = false;
-    document.getElementById("add").disabled = false;
-
+    // Add the first row automatically
     addRow();
     saveData();
 
+    // Scroll to top
     window.scrollTo({
-        top:0,
-        behavior:"smooth"
+        top: 0,
+        behavior: "smooth"
     });
 
 };
@@ -687,9 +647,7 @@ document.getElementById("prevPage").onclick = function(){
 
 loadData();
 document.getElementById("prevPage").style.display = "none";
-setInterval(checkNewDay, 60000);    
-window.addEventListener("load", checkNewDay);
- 
+
 </script>
 
 </body>
