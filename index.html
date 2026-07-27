@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Baby Feeding Tracker</title>
+
+<style>
+
+body{
+    margin:0;
+    min-height:100vh;
+    font-family:Arial,sans-serif;
+    padding:10px;
+
+    background-color:#fff;
+
+    background-image:
+        /* Top petal */
+        radial-gradient(circle at 30px 15px, #FFC5D3 8px, transparent 11px),
+
+        /* Upper-left petal */
+        radial-gradient(circle at 18px 24px, #FFC5D3 8px, transparent 11px),
+
+        /* Upper-right petal */
+        radial-gradient(circle at 42px 24px, #FFC5D3 8px, transparent 11px),
+
+        /* Bottom-left petal */
+        radial-gradient(circle at 23px 38px, #FFC5D3 8px, transparent 11px),
+
+        /* Bottom-right petal */
+        radial-gradient(circle at 38px 38px, #FFC5D3 8px, transparent 11px),
+
+        /* White flower center */
+        radial-gradient(circle at 30px 30px, white 5px, transparent 6px);
+
+    background-size:70px 70px;
+    background-repeat:repeat;
+}
+
+/* Moving Mommy Banner */
+.banner{
+    width:calc(100% + 20px);
+    margin:45px -10px 15px;
+    overflow:hidden;
+
+    background:linear-gradient(90deg,#FFD6E8,#FFF5F8,#FFD6E8);
+
+    border:none;
+    border-radius:0;
+
+    padding:8px 0;
+    box-shadow:0 2px 8px rgba(229,138,164,.2);
+}
+
+.banner-track{
+    display:flex;
+    width:max-content;
+    animation:marquee 12s linear infinite;
+    will-change:transform;
+}
+
+.banner-track span{
+    flex-shrink:0;
+    white-space:nowrap;
+    padding-right:0;
+    font-size:17px;
+    font-weight:bold;
+    color:#D96C8D;
+}
+
+@keyframes marquee{
+    from{
+        transform:translateX(0);
+    }
+    to{
+        transform:translateX(-33.333%);
+    }
+}
+
+.banner:hover .banner-track{
+    animation-play-state:paused;
+}
+
+h2{
+    text-align:center;
+    background:white;
+    border-radius:15px;
+    padding:10px 20px;
+    margin:15px auto;
+    width:fit-content;
+    box-shadow:0 2px 8px rgba(229,138,164,.2);
+    color:black;
+}
+
+.page{
+    display:none;
+}
+
+.page.active{
+    display:block;
+}
+
+table{
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0;
+    background:white;
+    margin-bottom:15px;
+    border:1px solid #ccc;
+    border-radius:10px; /* Rounded corners */
+    overflow:hidden;
+}
+
+th,td{
+    border-right:1px solid #ccc;
+    border-bottom:1px solid #ccc;
+    padding:10px;
+    text-align:center;
+}
+
+/* Remove borders on the outside edges */
+th:last-child,
+td:last-child{
+    border-right:none;
+}
+
+tbody tr:last-child td,
+tfoot tr th{
+    border-bottom:none;
+}
+
+th{
+    background-color: #FFE5E7;
+}
+
+select{
+    width:100%;
+    padding:8px 34px 8px 10px;
+    font-size:15px;
+    font-weight:600;
+    color:#555;
+
+    border:1px solid #F5B6C8;
+    border-radius:8px;
+
+    background:
+        linear-gradient(180deg,#FFF8FA,#FFECEF);
+
+    appearance:none;
+    -webkit-appearance:none;
+    -moz-appearance:none;
+
+    cursor:pointer;
+    transition:.2s;
+
+    background-image:
+        linear-gradient(45deg, transparent 50%, #E58AA4 50%),
+        linear-gradient(135deg, #E58AA4 50%, transparent 50%);
+
+    background-position:
+        calc(100% - 16px) calc(50% - 2px),
+        calc(100% - 11px) calc(50% - 2px);
+
+    background-size:6px 6px;
+    background-repeat:no-repeat;
+}
+
+select:hover{
+    background:linear-gradient(180deg,#FFF4F7,#FFE2EA);
+    border-color:#E58AA4;
+}
+
+select:focus{
+    outline:none;
+    border-color:#D96C8D;
+    box-shadow:0 0 0 3px rgba(233,143,170,.25);
+}
+
+button{
+    padding:10px 18px;
+    margin:5px;
+    font-size:15px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background-color: #FFD1DC;
+    width:auto;
+    height:auto;
+    white-space:nowrap;
+}
+
+button:disabled{
+    color: black;
+    opacity:1;
+}
+
+
+input[type="checkbox"]{
+    transform:scale(1.3);
+}
+
+#pageInfo{
+    text-align:center;
+    font-weight:bold;
+    margin-bottom:10px;
+}
+.tableDate{
+    font-weight:bold;
+    margin-bottom:8px;
+    text-align:left;
+    color:black;
+    font-size:16px;
+}
+</style>
+</head>
+
+<body>
+    
+<button id="fullscreenBtn" onclick="toggleFullscreen()"
+style="position:fixed; top:10px; left:10px; z-index:1000;">
+    ⛶
+</button>
+<button id="exitFullscreenBtn" onclick="exitFullscreen()"
+style="position:fixed; top:10px; left:10px; z-index:1000; display:none;">
+    ✕
+</button>
+
+<div class="banner">
+    <div class="banner-track">
+        <span>🌸 This website is made by mommy for you baby 😘💕 &nbsp;🌸 妈咪为你制作这个网站，宝贝亲亲 😘 💕 &nbsp;</span>
+        <span>🌸 This website is made by mommy for you baby 😘💕 &nbsp;🌸 妈咪为你制作这个网站，宝贝亲亲 😘 💕 &nbsp;</span>
+        <span>🌸 This website is made by mommy for you baby 😘💕 &nbsp;🌸 妈咪为你制作这个网站，宝贝亲亲 😘 💕 &nbsp;</span>
+    </div>
+</div>
+
+<h2>Baby Feeding Tracker ✨</h2>
+<h2>宝宝喂养追踪表 ✨</h2>
+
+<div id="pageInfo">
+    Page 1 of 1<br>
+    第1页，共1页
+</div>
+<div id="pages"></div>
+
+<div style="text-align:center;">
+    <button id="add">Add / 添加一行</button>
+    <br>
+    <button id="prevPage">⬅ Previous<br>上一页</button>
+    <button id="nextPage">Next Page ➜<br>下一页</button>
+</div>
+
+<script>
+
+
+const diaper = ["Pee/尿尿","Poop/大便"];
+
+let pages=[];
+let currentPage=0;
+
+function updateAddButton() {
+    document.getElementById("add").style.display = "inline-block";
+    document.getElementById("add").disabled = false;
+}
+
+function createMilkSelect(options){
+    let select = document.createElement("select");
+
+    options.forEach(option=>{
+        let opt = document.createElement("option");
+        opt.text = option + " ML";
+        opt.value = option;
+        select.appendChild(opt);
+    });
+
+    return select;
+}
+
+function createSelect(options){
+    let select = document.createElement("select");
+
+    options.forEach(option=>{
+        let opt = document.createElement("option");
+        opt.text = option;
+        opt.value = option;
+        select.appendChild(opt);
+    });
+
+    return select;
+}
+
+const milk = [100,120,150,180,210,240,270,300];
+
+function createTimeButton(){
+
+    let button = document.createElement("button");
+    button.innerHTML = "Log Time<br>记录时间";
+
+    button.onclick = function(){
+
+        let now = new Date();
+
+        let time = now.toLocaleTimeString([], {
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true
+        });
+
+        // Replace the button with plain text
+        let text = document.createElement("span");
+        text.textContent = time;
+
+        button.parentNode.replaceChild(text, button);
+    };
+
+    return button;
+}
+
+function toggleFullscreen() {
+
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+    }
+
+}
+
+function exitFullscreen() {
+    if (document.fullscreenElement) {
+        document.exitFullscreen();
+    }
+}
+
+document.addEventListener("fullscreenchange", function () {
+    const enterBtn = document.getElementById("fullscreenBtn");
+    const exitBtn = document.getElementById("exitFullscreenBtn");
+
+    if (document.fullscreenElement) {
+        enterBtn.style.display = "none";
+        exitBtn.style.display = "block";
+    } else {
+        enterBtn.style.display = "block";
+        exitBtn.style.display = "none";
+    }
+});
+
+function createPage(){
+
+    let page = document.createElement("div");
+    page.className = "page";
+
+    // Date for this page (Page 1 = today, Page 2 = tomorrow, etc.)
+    let pageDate = new Date();
+    pageDate.setDate(pageDate.getDate() + pages.length);
+
+    let dateDiv = document.createElement("div");
+    dateDiv.className = "tableDate";
+    dateDiv.innerHTML =
+        "DATE: " +
+        pageDate.toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric"
+        });
+
+    page.appendChild(dateDiv);
+
+    let table = document.createElement("table");
+
+    table.innerHTML = `
+<thead>
+    <tr>
+        <th>Line No.<br>行号</th>
+        <th>Time<br>时间</th>
+        <th>Burp<br>拍嗝</th>
+        <th>Milk<br>奶量</th>
+        <th>Diaper<br>尿布</th>
+    </tr>
+</thead>
+
+<tbody></tbody>
+
+<tfoot>
+    <tr>
+        <th colspan="3">Total Milk<br>总奶量</th>
+        <th class="milkTotal">0 ML</th>
+        <th class="poopStatus">Pooped 0 time today.<br>今天大便0次。</th>
+    </tr>
+</tfoot>
+`;
+
+    page.appendChild(table);
+
+    document.getElementById("pages").appendChild(page);
+
+    pages.push(page);
+
+    showPage(pages.length-1);
+
+    document.getElementById("pageInfo").innerHTML =
+        "Page " + (currentPage + 1) + " of " + pages.length +
+        "<br>第" + (currentPage + 1) + "页，共" + pages.length + "页";
+}
+
+function showPage(index){
+
+    pages.forEach(p => p.classList.remove("active"));
+
+    pages[index].classList.add("active");
+
+    currentPage = index;
+
+    // Update page number
+    document.getElementById("pageInfo").innerHTML =
+        "Page " + (currentPage + 1) + " of " + pages.length +
+        "<br>第" + (currentPage + 1) + "页，共" + pages.length + "页";
+
+    // Hide Previous button on first page only
+    document.getElementById("prevPage").style.display =
+        currentPage === 0 ? "none" : "inline-block";
+
+    updateMilkTotal();
+    updateAddButton();
+}
+
+function updateMilkTotal(){
+
+    let table = pages[currentPage].querySelector("table");
+    let milkSelects = table.querySelectorAll("tbody td:nth-child(4) select");
+    let diaperSelects = table.querySelectorAll("tbody td:nth-child(5) select");
+
+    let total = 0;
+
+    milkSelects.forEach(select=>{
+        total += Number(select.value);
+    });
+
+    table.querySelector(".milkTotal").textContent = total + " ML";
+
+
+    // Count number of Poop entries
+let poopCount = 0;
+
+diaperSelects.forEach(select => {
+    if (select.value === "Poop/大便") {
+        poopCount++;
+    }
+});
+
+table.querySelector(".poopStatus").innerHTML =
+    "Pooped " + poopCount + " time" + (poopCount > 1 ? "s" : "") + " today."
+    + "<br>今天大便" + poopCount + "次。";
+}
+
+function addRow(){
+
+    let tbody = pages[currentPage].querySelector("tbody");
+
+    let row=document.createElement("tr");
+    
+    // Line Number
+    let numberCell=document.createElement("td");
+
+    let lineNumber = tbody.rows.length + 1;
+    numberCell.innerHTML = lineNumber;
+
+    row.appendChild(numberCell);
+
+    // Time button
+    let timeCell=document.createElement("td");
+    timeCell.appendChild(createTimeButton());
+    row.appendChild(timeCell);
+    
+    // Burp checkbox
+    let burpCell=document.createElement("td");
+
+    let burpCheckbox=document.createElement("input");
+    burpCheckbox.type="checkbox";
+
+    burpCell.style.textAlign="center";
+    burpCell.appendChild(burpCheckbox);
+
+    row.appendChild(burpCell);
+
+    // Milk dropdown
+    let milkCell=document.createElement("td");
+
+    let milkSelect=createMilkSelect(milk);
+    
+    milkSelect.onchange=function(){
+    updateMilkTotal();
+    };
+
+    milkCell.appendChild(milkSelect);
+    row.appendChild(milkCell);
+
+// Diaper dropdown
+let diaperCell = document.createElement("td");
+let diaperSelect = createSelect(diaper);
+
+diaperSelect.onchange = function(){
+    updateMilkTotal();
+};
+
+diaperCell.appendChild(diaperSelect);
+row.appendChild(diaperCell);   
+
+tbody.appendChild(row);
+updateMilkTotal();
+
+    // Automatically scroll to bottom after adding row
+setTimeout(() => {
+    window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: "smooth"
+    });
+}, 100);
+}
+
+
+
+document.getElementById("add").onclick = addRow;
+document.getElementById("nextPage").onclick = function () {
+
+    // Create a new page
+    createPage();
+
+    // Add the first row automatically
+    addRow();
+
+    // Scroll to top
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+
+};
+document.getElementById("prevPage").onclick = function(){
+
+    if(currentPage > 0){
+        showPage(currentPage - 1);
+
+        window.scrollTo({
+            top:0,
+            behavior:"smooth"
+        });
+    }
+
+};
+
+
+createPage();
+document.getElementById("prevPage").style.display = "none";
+
+// First row
+addRow();
+</script>
+
+</body>
+</html>
