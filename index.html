@@ -251,7 +251,7 @@ style="position:fixed; top:10px; left:10px; z-index:1000; display:none;">
 <script>
 
 
-const diaper = ["Pee/尿尿","Poop/大便"];
+const diaper = ["Pee/尿尿","*****/大便"];
 
 let pages=[];
 let currentPage=0;
@@ -309,6 +309,8 @@ function createTimeButton(){
         text.textContent = time;
 
         button.parentNode.replaceChild(text, button);
+        saveData();
+        
     };
 
     return button;
@@ -340,6 +342,99 @@ document.addEventListener("fullscreenchange", function () {
         exitBtn.style.display = "none";
     }
 });
+
+// ===== SAVE & LOAD DATA =====
+
+function saveData() {
+
+    let data = {
+        currentPage: currentPage,
+        pages: []
+    };
+
+    pages.forEach(page => {
+
+        let pageData = [];
+
+        page.querySelectorAll("tbody tr").forEach(row => {
+
+            let time =
+                row.cells[1].querySelector("span") ?
+                row.cells[1].querySelector("span").textContent :
+                "";
+
+            pageData.push({
+                time: time,
+                burp: row.cells[2].querySelector("input").checked,
+                milk: row.cells[3].querySelector("select").value,
+                diaper: row.cells[4].querySelector("select").value
+            });
+
+        });
+
+        data.pages.push(pageData);
+
+    });
+
+    localStorage.setItem("babyTrackerData", JSON.stringify(data));
+
+}
+
+function loadData() {
+
+    let saved = localStorage.getItem("babyTrackerData");
+
+    if (!saved) {
+
+        createPage();
+        addRow();
+        return;
+
+    }
+
+    let data = JSON.parse(saved);
+
+    document.getElementById("pages").innerHTML = "";
+    pages = [];
+
+    data.pages.forEach(pageRows => {
+
+        createPage();
+
+        let tbody = pages[pages.length - 1].querySelector("tbody");
+        tbody.innerHTML = "";
+
+        pageRows.forEach(r => {
+
+            addRow();
+
+            let row = tbody.lastElementChild;
+
+            // Restore time
+            if (r.time) {
+
+                row.cells[1].innerHTML = "";
+                let span = document.createElement("span");
+                span.textContent = r.time;
+                row.cells[1].appendChild(span);
+
+            }
+
+            row.cells[2].querySelector("input").checked = r.burp;
+
+            row.cells[3].querySelector("select").value = r.milk;
+
+            row.cells[4].querySelector("select").value = r.diaper;
+
+        });
+
+        updateMilkTotal();
+
+    });
+
+    showPage(data.currentPage || 0);
+
+}
 
 function createPage(){
 
@@ -435,11 +530,11 @@ function updateMilkTotal(){
     table.querySelector(".milkTotal").textContent = total + " ML";
 
 
-    // Count number of Poop entries
+    // Count number of ***** entries
 let poopCount = 0;
 
 diaperSelects.forEach(select => {
-    if (select.value === "Poop/大便") {
+    if (select.value === "*****/大便") {
         poopCount++;
     }
 });
@@ -473,6 +568,7 @@ function addRow(){
 
     let burpCheckbox=document.createElement("input");
     burpCheckbox.type="checkbox";
+    burpCheckbox.onchange = saveData;
 
     burpCell.style.textAlign="center";
     burpCell.appendChild(burpCheckbox);
@@ -486,8 +582,9 @@ function addRow(){
     
     milkSelect.onchange=function(){
     updateMilkTotal();
-    };
-
+    saveData();
+};
+    
     milkCell.appendChild(milkSelect);
     row.appendChild(milkCell);
 
@@ -497,6 +594,7 @@ let diaperSelect = createSelect(diaper);
 
 diaperSelect.onchange = function(){
     updateMilkTotal();
+    saveData();
 };
 
 diaperCell.appendChild(diaperSelect);
@@ -504,6 +602,7 @@ row.appendChild(diaperCell);
 
 tbody.appendChild(row);
 updateMilkTotal();
+saveData();
 
     // Automatically scroll to bottom after adding row
 setTimeout(() => {
@@ -524,6 +623,7 @@ document.getElementById("nextPage").onclick = function () {
 
     // Add the first row automatically
     addRow();
+    saveData();
 
     // Scroll to top
     window.scrollTo({
@@ -545,12 +645,9 @@ document.getElementById("prevPage").onclick = function(){
 
 };
 
-
-createPage();
+loadData();
 document.getElementById("prevPage").style.display = "none";
 
-// First row
-addRow();
 </script>
 
 </body>
