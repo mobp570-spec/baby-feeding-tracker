@@ -251,7 +251,7 @@ style="position:fixed; top:10px; left:10px; z-index:1000; display:none;">
 <script>
 
 
-const diaper = ["Pee/尿尿","*****/大便"];
+const diaper = ["Pee/尿尿","Poop/大便"];
 
 let pages=[];
 let currentPage=0;
@@ -534,7 +534,7 @@ function updateMilkTotal(){
 let poopCount = 0;
 
 diaperSelects.forEach(select => {
-    if (select.value === "*****/大便") {
+    if (select.value === "Poop/大便") {
         poopCount++;
     }
 });
