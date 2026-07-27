@@ -1,4 +1,4 @@
-i<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
@@ -268,6 +268,7 @@ const diaper = ["Pee/尿尿","Poop/大便"];
 
 let pages=[];
 let currentPage=0;
+let dayLocked = false;
 
 function updateAddButton() {
     document.getElementById("add").style.display = "inline-block";
@@ -558,48 +559,32 @@ table.querySelector(".poopStatus").innerHTML =
 }
 
 function checkNewDay() {
+
     const newDayKey = getDayKey();
 
     if (newDayKey !== currentDayKey) {
 
         currentDayKey = newDayKey;
+        dayLocked = true;
 
-        // Prevent adding rows to previous page
-        const addBtn = document.getElementById("addRowBtn");
-        if (addBtn) addBtn.disabled = true;
+        document.getElementById("add").disabled = true;
 
-        // Show prompt
-        setTimeout(() => {
-
-            const goNext = confirm(
-                "A new day has started.\n\n" +
-                "The previous page has been locked.\n\n" +
-                "Press OK to go to the next page."
-            );
-
-            if (goNext) {
-
-                // If already on last page create one
-                if (currentPage === pages.length - 1) {
-                    createNewPage();
-                }
-
-                currentPage++;
-                showPage(currentPage);
-
-                if (addBtn) addBtn.disabled = false;
-
-                // Automatically add first row
-                addRow();
-
-            }
-
-        }, 300);
-
+        alert(
+            "🌸 New day, new memories! 🌸\n\n" +
+            "It's after 1:00 AM.\n\n" +
+            "This page is now complete.\n\n" +
+            "💕 Please tap 'Next Page' to continue today's feeding tracker."
+        );
     }
 }
 
 function addRow(){
+    
+    checkNewDay();
+
+if (dayLocked) {
+    return;
+}
 
     let tbody = pages[currentPage].querySelector("tbody");
 
@@ -673,17 +658,17 @@ setTimeout(() => {
 document.getElementById("add").onclick = addRow;
 document.getElementById("nextPage").onclick = function () {
 
-    // Create a new page
     createPage();
 
-    // Add the first row automatically
+    dayLocked = false;
+    document.getElementById("add").disabled = false;
+
     addRow();
     saveData();
 
-    // Scroll to top
     window.scrollTo({
-        top: 0,
-        behavior: "smooth"
+        top:0,
+        behavior:"smooth"
     });
 
 };
