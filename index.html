@@ -247,9 +247,10 @@ style="position:fixed; top:10px; left:10px; z-index:1000; display:none;">
     <button id="prevPage">⬅ Previous<br>上一页</button>
     <button id="nextPage">Next Page ➜<br>下一页</button>
 </div>
-
+    
+<script>
 let currentDayKey = getDayKey();
-
+ 
 function getDayKey() {
     const now = new Date();
 
@@ -260,8 +261,7 @@ function getDayKey() {
 
     return now.toISOString().split("T")[0];
 }    
-
-<script>
+   
 
 
 const diaper = ["Pee/尿尿","Poop/大便"];
