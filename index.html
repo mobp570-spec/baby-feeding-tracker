@@ -248,6 +248,19 @@ style="position:fixed; top:10px; left:10px; z-index:1000; display:none;">
     <button id="nextPage">Next Page ➜<br>下一页</button>
 </div>
 
+let currentDayKey = getDayKey();
+
+function getDayKey() {
+    const now = new Date();
+
+    // Treat 1:00 AM as the start of a new tracking day
+    if (now.getHours() < 1) {
+        now.setDate(now.getDate() - 1);
+    }
+
+    return now.toISOString().split("T")[0];
+}    
+
 <script>
 
 
@@ -544,6 +557,48 @@ table.querySelector(".poopStatus").innerHTML =
     + "<br>今天大便" + poopCount + "次。";
 }
 
+function checkNewDay() {
+    const newDayKey = getDayKey();
+
+    if (newDayKey !== currentDayKey) {
+
+        currentDayKey = newDayKey;
+
+        // Prevent adding rows to previous page
+        const addBtn = document.getElementById("addRowBtn");
+        if (addBtn) addBtn.disabled = true;
+
+        // Show prompt
+        setTimeout(() => {
+
+            const goNext = confirm(
+                "A new day has started.\n\n" +
+                "The previous page has been locked.\n\n" +
+                "Press OK to go to the next page."
+            );
+
+            if (goNext) {
+
+                // If already on last page create one
+                if (currentPage === pages.length - 1) {
+                    createNewPage();
+                }
+
+                currentPage++;
+                showPage(currentPage);
+
+                if (addBtn) addBtn.disabled = false;
+
+                // Automatically add first row
+                addRow();
+
+            }
+
+        }, 300);
+
+    }
+
+
 function addRow(){
 
     let tbody = pages[currentPage].querySelector("tbody");
@@ -647,7 +702,9 @@ document.getElementById("prevPage").onclick = function(){
 
 loadData();
 document.getElementById("prevPage").style.display = "none";
-
+setInterval(checkNewDay, 60000);    
+window.addEventListener("load", checkNewDay);
+ 
 </script>
 
 </body>
