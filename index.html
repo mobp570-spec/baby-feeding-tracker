@@ -396,6 +396,8 @@ function loadData() {
 
     document.getElementById("pages").innerHTML = "";
     pages = [];
+    
+    document.getElementById("pages").replaceChildren();
 
     data.pages.forEach(pageRows => {
 
@@ -406,7 +408,7 @@ function loadData() {
 
         pageRows.forEach(r => {
 
-            addRow();
+            addRow(false);
 
             let row = tbody.lastElementChild;
 
@@ -433,8 +435,8 @@ function loadData() {
     });
 
     showPage(data.currentPage || 0);
-
-}
+    
+}currentPage = data.currentPage || 0;
 
 function createPage(){
 
@@ -544,7 +546,7 @@ table.querySelector(".poopStatus").innerHTML =
     + "<br>今天大便" + poopCount + "次。";
 }
 
-function addRow(){
+function addRow(save = true){
 
     let tbody = pages[currentPage].querySelector("tbody");
 
@@ -602,7 +604,10 @@ row.appendChild(diaperCell);
 
 tbody.appendChild(row);
 updateMilkTotal();
-saveData();
+
+if (save) {
+    saveData();
+}
 
     // Automatically scroll to bottom after adding row
 setTimeout(() => {
