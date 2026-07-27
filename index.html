@@ -255,6 +255,20 @@ const diaper = ["Pee/尿尿","Poop/大便"];
 
 let pages=[];
 let currentPage=0;
+function isNextDayPage() {
+
+    const today = new Date();
+
+    const pageDate = new Date();
+    pageDate.setDate(pageDate.getDate() + currentPage);
+
+    return (
+        today.getFullYear() === pageDate.getFullYear() &&
+        today.getMonth() === pageDate.getMonth() &&
+        today.getDate() > pageDate.getDate()
+    );
+
+}
 
 function updateAddButton() {
     document.getElementById("add").style.display = "inline-block";
@@ -394,10 +408,8 @@ function loadData() {
 
     let data = JSON.parse(saved);
 
-    document.getElementById("pages").innerHTML = "";
-    pages = [];
-    
     document.getElementById("pages").replaceChildren();
+    pages = [];
 
     data.pages.forEach(pageRows => {
 
@@ -436,8 +448,9 @@ function loadData() {
 
     showPage(data.currentPage || 0);
     
-}currentPage = data.currentPage || 0;
+currentPage = data.currentPage || 0;
 
+}
 function createPage(){
 
     let page = document.createElement("div");
@@ -618,19 +631,36 @@ setTimeout(() => {
 }, 100);
 }
 
+document.getElementById("add").onclick = function () {
 
+    const now = new Date();
 
-document.getElementById("add").onclick = addRow;
+    // Only trigger if this page is an older date
+    // AND the current time is 1:00 AM or later
+    if (isNextDayPage() && now.getHours() >= 1) {
+
+        document.getElementById("add").style.display = "none";
+
+        alert(
+            "🌸 It's a new day! ✨\n\nPlease click 'Next Page' and add your new row there. 💕\n\n🌸 新的一天开始啦！✨\n请点击“下一页”并在那里添加新的记录。💕"
+        );
+
+        return;
+    }
+
+    addRow();
+
+};
 document.getElementById("nextPage").onclick = function () {
 
-    // Create a new page
     createPage();
-
-    // Add the first row automatically
     addRow();
     saveData();
 
-    // Scroll to top
+    showPage(currentPage); // Refresh Previous button
+
+    document.getElementById("add").style.display = "inline-block";
+
     window.scrollTo({
         top: 0,
         behavior: "smooth"
@@ -651,7 +681,6 @@ document.getElementById("prevPage").onclick = function(){
 };
 
 loadData();
-document.getElementById("prevPage").style.display = "none";
 
 </script>
 
