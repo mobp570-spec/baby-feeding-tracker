@@ -278,6 +278,13 @@ function updateAddButton() {
 function createMilkSelect(options){
     let select = document.createElement("select");
 
+    // Medicine option at the top (counts as 0 ML)
+    let medicine = document.createElement("option");
+    medicine.text = "Medicine / 药物";
+    medicine.value = 0;
+    select.appendChild(medicine);
+
+    // Milk options
     options.forEach(option=>{
         let opt = document.createElement("option");
         opt.text = option + " ML";
@@ -380,6 +387,7 @@ function saveData() {
             pageData.push({
                 time: time,
                 burp: row.cells[2].querySelector("input").checked,
+                //milk: row.cells[3].querySelector("select").value,
                 milk: row.cells[3].querySelector("select").value,
                 diaper: row.cells[4].querySelector("select").value
             });
@@ -436,7 +444,14 @@ function loadData() {
 
             row.cells[2].querySelector("input").checked = r.burp;
 
-            row.cells[3].querySelector("select").value = r.milk;
+            //row.cells[3].querySelector("select").value = r.milk;
+            let milkSelect = row.cells[3].querySelector("select");
+
+if (r.milk === "0" || r.milk === 0) {
+    milkSelect.value = "0";
+} else {
+    milkSelect.value = r.milk;
+}
 
             row.cells[4].querySelector("select").value = r.diaper;
 
