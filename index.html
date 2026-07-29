@@ -693,11 +693,19 @@ document.getElementById("add").onclick = function () {
 };
 document.getElementById("nextPage").onclick = function () {
 
-    createPage();
-    addRow();
-    saveData();
+    // If the next page already exists, just go to it.
+    if (currentPage < pages.length - 1) {
 
-    showPage(currentPage); // Refresh Previous button
+        showPage(currentPage + 1);
+
+    } else {
+
+        // Only create a new page when we're on the last page.
+        createPage();
+        addRow();
+        saveData();
+
+    }
 
     document.getElementById("add").style.display = "inline-block";
 
