@@ -493,7 +493,7 @@ function createPage(){
 
     let table = document.createElement("table");
 
-    table.innerHTML = `
+table.innerHTML = `
 <thead>
     <tr>
         <th>Line No.<br>行号</th>
@@ -501,15 +501,28 @@ function createPage(){
         <th>Burp<br>拍嗝</th>
         <th>Milk<br>奶量</th>
         <th>Diaper<br>尿布</th>
-        <th> </th>
+        <th></th>
     </tr>
 </thead>
 
 <tbody></tbody>
-        <th colspan="4">Total Milk<br>总奶量</th>
-        <th class="milkTotal">0 ML</th>
-        <th class="poopStatus">Pooped 0 time today.<br>今天大便0次。</th>
-    </tr>
+
+<tfoot>
+<tr>
+    <th colspan="3">
+        Total Milk<br>总奶量
+    </th>
+
+    <th class="milkTotal">
+        0 ML
+    </th>
+
+    <th class="poopStatus">
+        Pooped 0 time today.<br>今天大便0次。
+    </th>
+
+    <th></th>
+</tr>
 </tfoot>
 `;
 
