@@ -398,7 +398,10 @@ function saveData() {
 });
         });
 
-        data.pages.push(pageData);
+data.pages.push({
+    date: page.querySelector(".tableDate").dataset.date,
+    rows: pageData
+});
 
     });
 
@@ -411,11 +414,9 @@ function loadData() {
     let saved = localStorage.getItem("babyTrackerData");
 
     if (!saved) {
-
         createPage();
         addRow();
         return;
-
     }
 
     let data = JSON.parse(saved);
@@ -423,42 +424,58 @@ function loadData() {
     document.getElementById("pages").replaceChildren();
     pages = [];
 
-    data.pages.forEach(pageRows => {
+    data.pages.forEach((pageData, index) => {
 
-        createPage();
+        // Support BOTH old and new save formats
+        let rows;
+        let date;
+
+        if (Array.isArray(pageData)) {
+            // Old format
+            rows = pageData;
+
+            let d = new Date();
+            d.setDate(d.getDate() + index);
+            date = d.toISOString();
+
+        } else {
+            // New format
+            rows = pageData.rows || [];
+
+            if (pageData.date) {
+                date = pageData.date;
+            } else {
+                let d = new Date();
+                d.setDate(d.getDate() + index);
+                date = d.toISOString();
+            }
+        }
+
+        createPage(date);
 
         let tbody = pages[pages.length - 1].querySelector("tbody");
         tbody.innerHTML = "";
 
-        pageRows.forEach(r => {
+        rows.forEach(r => {
 
             addRow(false);
 
             let row = tbody.lastElementChild;
 
-            // Restore time
             if (r.time) {
-
                 row.cells[1].innerHTML = "";
                 let span = document.createElement("span");
                 span.textContent = r.time;
                 row.cells[1].appendChild(span);
-
             }
 
             row.cells[2].querySelector("input").checked = r.burp;
 
-            //row.cells[3].querySelector("select").value = r.milk;
             let milkSelect = row.cells[3].querySelector("select");
+            milkSelect.value = String(r.milk ?? "0");
 
-if (r.milk === "0" || r.milk === 0) {
-    milkSelect.value = "0";
-} else {
-    milkSelect.value = r.milk;
-}
-
-            row.cells[4].querySelector("select").value = r.diaper;
-
+            row.cells[4].querySelector("select").value =
+                r.diaper || "Pee/尿尿";
         });
 
         updateMilkTotal();
@@ -466,31 +483,62 @@ if (r.milk === "0" || r.milk === 0) {
     });
 
     showPage(data.currentPage || 0);
-    
-currentPage = data.currentPage || 0;
+    currentPage = data.currentPage || 0;
+}
+
+function repairSavedDates(){
+
+    if(pages.length===0) return;
+
+    let firstDate = new Date();
+
+    pages.forEach((page,index)=>{
+
+        let d = new Date(firstDate);
+
+        d.setDate(firstDate.getDate()+index);
+
+        let dateDiv = page.querySelector(".tableDate");
+
+        dateDiv.dataset.date = d.toISOString();
+
+        dateDiv.innerHTML =
+            "DATE: " +
+            d.toLocaleDateString("en-GB",{
+                day:"2-digit",
+                month:"2-digit",
+                year:"numeric"
+            });
+
+    });
+
+    saveData();
 
 }
-function createPage(){
+
+function createPage(dateString = null){
 
     let page = document.createElement("div");
     page.className = "page";
 
-    // Date for this page (Page 1 = today, Page 2 = tomorrow, etc.)
-    let pageDate = new Date();
-    pageDate.setDate(pageDate.getDate() + pages.length);
+    let pageDate = dateString
+        ? new Date(dateString)
+        : new Date();
 
     let dateDiv = document.createElement("div");
     dateDiv.className = "tableDate";
+
+    dateDiv.dataset.date = pageDate.toISOString();
+
     dateDiv.innerHTML =
         "DATE: " +
-        pageDate.toLocaleDateString("en-GB", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric"
+        pageDate.toLocaleDateString("en-GB",{
+            day:"2-digit",
+            month:"2-digit",
+            year:"numeric"
         });
 
     page.appendChild(dateDiv);
-
     let table = document.createElement("table");
 
 table.innerHTML = `
@@ -720,7 +768,16 @@ document.getElementById("nextPage").onclick = function () {
     } else {
 
         // Only create a new page when we're on the last page.
-        createPage();
+        const lastDate =
+    new Date(
+        pages[pages.length-1]
+        .querySelector(".tableDate")
+        .dataset.date
+    );
+
+lastDate.setDate(lastDate.getDate()+1);
+
+createPage(lastDate.toISOString());
         addRow();
         saveData();
 
@@ -748,6 +805,7 @@ document.getElementById("prevPage").onclick = function(){
 };
 
 loadData();
+repairSavedDates();
 
 </script>
 
