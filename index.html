@@ -478,69 +478,6 @@ function loadData() {
     currentPage = data.currentPage || 0;
 }
 
-//function repairSavedDates(){
-
-    if(pages.length===0) return;
-
-    let firstDate = new Date();
-
-    pages.forEach((page,index)=>{
-
-        let d = new Date(firstDate);
-
-        d.setDate(firstDate.getDate()+index);
-
-        let dateDiv = page.querySelector(".tableDate");
-
-        dateDiv.dataset.date = d.toISOString();
-
-        dateDiv.innerHTML =
-            "DATE: " +
-            d.toLocaleDateString("en-GB",{
-                day:"2-digit",
-                month:"2-digit",
-                year:"numeric"
-            });
-
-    });
-
-    saveData();
-
-}
-function repairSavedDates(){
-
-    if(pages.length===0) return;
-
-    // Make the CURRENT page today's date
-    const today = new Date();
-    today.setHours(0,0,0,0);
-
-    const currentDate = new Date(today);
-
-    currentDate.setDate(today.getDate() - (pages.length - 1 - currentPage));
-
-    pages.forEach((page,index)=>{
-
-        const d = new Date(currentDate);
-        d.setDate(currentDate.getDate() + (index - currentPage));
-
-        const dateDiv = page.querySelector(".tableDate");
-
-        dateDiv.dataset.date = d.toISOString();
-
-        dateDiv.innerHTML =
-            "DATE: " +
-            d.toLocaleDateString("en-GB",{
-                day:"2-digit",
-                month:"2-digit",
-                year:"numeric"
-            });
-
-    });
-
-    saveData();
-}
-
 
 function createPage(dateString = null){
 
@@ -831,7 +768,6 @@ document.getElementById("prevPage").onclick = function(){
 };
 
 loadData();
-repairSavedDates();
 
 </script>
 
