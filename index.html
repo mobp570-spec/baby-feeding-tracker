@@ -311,6 +311,7 @@ const diaper = ["Pee/尿尿","Poop/大便"];
 
 let pages=[];
 let currentPage=0;
+let loadingData=false;
 
 function updateAddButton() {
     document.getElementById("add").style.display = "inline-block";
@@ -448,11 +449,14 @@ data.pages.push({
 
 function loadData() {
 
+    loadingData = true;
+
     let saved = localStorage.getItem("babyTrackerData");
 
     if (!saved) {
         createPage();
         addRow();
+        loadingData = false;
         return;
     }
 
@@ -466,85 +470,142 @@ function loadData() {
         let rows = [];
         let date;
 
+
         // ===== OLD SAVE FORMAT =====
         if (Array.isArray(pageData)) {
 
             rows = pageData;
 
             let d = new Date();
-            d.setHours(0, 0, 0, 0);
+            d.setHours(0,0,0,0);
             d.setDate(d.getDate() + index);
 
             date = d.toISOString();
+
 
         } else {
 
             // ===== NEW SAVE FORMAT =====
             rows = pageData.rows || [];
 
+
             if (pageData.date) {
 
                 let testDate = new Date(pageData.date);
 
                 if (isNaN(testDate.getTime())) {
-
-                    // Invalid date → use today
                     testDate = new Date();
                 }
 
-                testDate.setHours(0, 0, 0, 0);
+                testDate.setHours(0,0,0,0);
                 date = testDate.toISOString();
+
 
             } else {
 
-                // Missing date → use today
                 let d = new Date();
-                d.setHours(0, 0, 0, 0);
+                d.setHours(0,0,0,0);
+
                 date = d.toISOString();
+
             }
         }
 
+
+        // Create page
         createPage(date);
 
-        let tbody = pages[pages.length - 1].querySelector("tbody");
+
+        // IMPORTANT:
+        // Point addRow() to the page currently loading
+        currentPage = pages.length - 1;
+
+
+        let tbody = pages[currentPage].querySelector("tbody");
         tbody.innerHTML = "";
+
 
         rows.forEach(r => {
 
             addRow(false);
 
+
             let row = tbody.lastElementChild;
 
-            // Restore time
+
+            if (!row) return;
+
+
+            // Restore Time
             if (r.time) {
+
                 row.cells[1].innerHTML = "";
+
                 let span = document.createElement("span");
                 span.textContent = r.time;
+
                 row.cells[1].appendChild(span);
             }
 
-            // Restore burp
-            row.cells[2].querySelector("input").checked = !!r.burp;
 
-            // Restore milk
-            let milkSelect = row.cells[3].querySelector("select");
-            milkSelect.value = String(r.milk ?? "0");
+            // Restore Burp
+            let burp =
+                row.cells[2].querySelector("input");
 
-            // Restore diaper
-            row.cells[4].querySelector("select").value =
-                r.diaper || "Pee/尿尿";
+            if (burp) {
+                burp.checked = !!r.burp;
+            }
+
+
+            // Restore Milk
+            let milkSelect =
+                row.cells[3].querySelector("select");
+
+            if (milkSelect) {
+                milkSelect.value = String(r.milk ?? "0");
+            }
+
+
+            // Restore Diaper
+            let diaperSelect =
+                row.cells[4].querySelector("select");
+
+            if (diaperSelect) {
+                diaperSelect.value =
+                    r.diaper || "Pee/尿尿";
+            }
+
         });
 
+
         updateMilkTotal();
+
     });
 
+
+
+    // If no pages exist, create a new one
     if (pages.length === 0) {
+
         createPage();
         addRow();
+
     }
 
-    currentPage = Math.min(data.currentPage || 0, pages.length - 1);
+
+
+    // Restore the last opened page
+    currentPage = Math.min(
+        data.currentPage || 0,
+        pages.length - 1
+    );
+
+
     showPage(currentPage);
+
+
+    loadingData = false;
+
 }
 
 function createPage(dateString = null){
@@ -612,16 +673,19 @@ function createPage(dateString = null){
 `;
 
     page.appendChild(table);
-
+    
     document.getElementById("pages").appendChild(page);
 
-    pages.push(page);
+pages.push(page);
 
+// Only show automatically when creating a new page normally
+if (!loadingData) {
     showPage(pages.length - 1);
+}
 
-    document.getElementById("pageInfo").innerHTML =
-        "Page " + (currentPage + 1) + " of " + pages.length +
-        "<br>第" + (currentPage + 1) + "页，共" + pages.length + "页";
+document.getElementById("pageInfo").innerHTML =
+    "Page " + (currentPage + 1) + " of " + pages.length +
+    "<br>第" + (currentPage + 1) + "页，共" + pages.length + "页";
 }
 
 function showPage(index){
