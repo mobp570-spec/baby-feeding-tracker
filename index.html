@@ -253,19 +253,21 @@ const diaper = ["Pee/尿尿","Poop/大便"];
 
 let pages=[];
 let currentPage=0;
+
 function isNextDayPage() {
 
     const today = new Date();
+    today.setHours(0,0,0,0);
 
-    const pageDate = new Date();
-    pageDate.setDate(pageDate.getDate() + currentPage);
-
-    return (
-        today.getFullYear() === pageDate.getFullYear() &&
-        today.getMonth() === pageDate.getMonth() &&
-        today.getDate() > pageDate.getDate()
+    const pageDate = new Date(
+        pages[currentPage]
+            .querySelector(".tableDate")
+            .dataset.date
     );
 
+    pageDate.setHours(0,0,0,0);
+
+    return pageDate < today;
 }
 
 function updateAddButton() {
@@ -418,27 +420,43 @@ function loadData() {
 
     data.pages.forEach((pageData, index) => {
 
-        // Support BOTH old and new save formats
-        let rows;
+        let rows = [];
         let date;
 
+        // ===== OLD SAVE FORMAT =====
         if (Array.isArray(pageData)) {
-            // Old format
+
             rows = pageData;
 
             let d = new Date();
+            d.setHours(0, 0, 0, 0);
             d.setDate(d.getDate() + index);
+
             date = d.toISOString();
 
         } else {
-            // New format
+
+            // ===== NEW SAVE FORMAT =====
             rows = pageData.rows || [];
 
             if (pageData.date) {
-                date = pageData.date;
+
+                let testDate = new Date(pageData.date);
+
+                if (isNaN(testDate.getTime())) {
+
+                    // Invalid date → use today
+                    testDate = new Date();
+                }
+
+                testDate.setHours(0, 0, 0, 0);
+                date = testDate.toISOString();
+
             } else {
+
+                // Missing date → use today
                 let d = new Date();
-                d.setDate(d.getDate() + index);
+                d.setHours(0, 0, 0, 0);
                 date = d.toISOString();
             }
         }
@@ -454,6 +472,7 @@ function loadData() {
 
             let row = tbody.lastElementChild;
 
+            // Restore time
             if (r.time) {
                 row.cells[1].innerHTML = "";
                 let span = document.createElement("span");
@@ -461,50 +480,62 @@ function loadData() {
                 row.cells[1].appendChild(span);
             }
 
-            row.cells[2].querySelector("input").checked = r.burp;
+            // Restore burp
+            row.cells[2].querySelector("input").checked = !!r.burp;
 
+            // Restore milk
             let milkSelect = row.cells[3].querySelector("select");
             milkSelect.value = String(r.milk ?? "0");
 
+            // Restore diaper
             row.cells[4].querySelector("select").value =
                 r.diaper || "Pee/尿尿";
         });
 
         updateMilkTotal();
-
     });
 
-    showPage(data.currentPage || 0);
-    currentPage = data.currentPage || 0;
-}
+    if (pages.length === 0) {
+        createPage();
+        addRow();
+    }
 
+    currentPage = Math.min(data.currentPage || 0, pages.length - 1);
+    showPage(currentPage);
+}
 
 function createPage(dateString = null){
 
     let page = document.createElement("div");
     page.className = "page";
 
+    // Use supplied date or today's date
     let pageDate = dateString
         ? new Date(dateString)
         : new Date();
 
+    // Remove time portion to avoid timezone/date shift bugs
+    pageDate.setHours(0, 0, 0, 0);
+
     let dateDiv = document.createElement("div");
     dateDiv.className = "tableDate";
 
+    // Save the exact page date
     dateDiv.dataset.date = pageDate.toISOString();
 
     dateDiv.innerHTML =
         "DATE: " +
-        pageDate.toLocaleDateString("en-GB",{
-            day:"2-digit",
-            month:"2-digit",
-            year:"numeric"
+        pageDate.toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric"
         });
 
     page.appendChild(dateDiv);
+
     let table = document.createElement("table");
 
-table.innerHTML = `
+    table.innerHTML = `
 <thead>
     <tr>
         <th>Line No.<br>行号</th>
@@ -543,7 +574,7 @@ table.innerHTML = `
 
     pages.push(page);
 
-    showPage(pages.length-1);
+    showPage(pages.length - 1);
 
     document.getElementById("pageInfo").innerHTML =
         "Page " + (currentPage + 1) + " of " + pages.length +
@@ -569,6 +600,28 @@ function showPage(index){
 
     updateMilkTotal();
     updateAddButton();
+}
+
+function resetCurrentPageDate() {
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const dateDiv = pages[currentPage].querySelector(".tableDate");
+
+    dateDiv.dataset.date = today.toISOString();
+
+    dateDiv.innerHTML =
+        "DATE: " +
+        today.toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric"
+        });
+
+    saveData();
+
+    alert("Current page date has been reset.");
 }
 
 function updateMilkTotal(){
@@ -730,20 +783,32 @@ document.getElementById("nextPage").onclick = function () {
 
     } else {
 
-        // Only create a new page when we're on the last page.
-        const lastDate =
-    new Date(
-        pages[pages.length-1]
-        .querySelector(".tableDate")
-        .dataset.date
-    );
+        // Today's date
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
 
-lastDate.setDate(lastDate.getDate()+1);
+        // Last page's saved date
+        const lastDate = new Date(
+            pages[pages.length - 1]
+                .querySelector(".tableDate")
+                .dataset.date
+        );
+        lastDate.setHours(0, 0, 0, 0);
 
-createPage(lastDate.toISOString());
+        // If today is later than the last page, use today's date.
+        // Otherwise, create the next calendar day.
+        let newPageDate;
+
+        if (today > lastDate) {
+            newPageDate = today;
+        } else {
+            newPageDate = new Date(lastDate);
+            newPageDate.setDate(newPageDate.getDate() + 1);
+        }
+
+        createPage(newPageDate.toISOString());
         addRow();
         saveData();
-
     }
 
     document.getElementById("add").style.display = "inline-block";
@@ -768,6 +833,7 @@ document.getElementById("prevPage").onclick = function(){
 };
 
 loadData();
+resetCurrentPageDate();
 
 </script>
 
