@@ -216,6 +216,60 @@ input[type="checkbox"]{
     padding:10px 15px;
     display:inline-block;
 }
+/* Red moving circle around total ML */
+.milkWarning{
+    display:inline-block;
+    padding:6px 12px;
+    border:3px solid red;
+    border-radius:999px;
+    animation:redPulse 1s linear infinite;
+}
+
+@keyframes redPulse{
+    0%{
+        transform:rotate(0deg) scale(1);
+        border-color:red;
+    }
+    50%{
+        transform:rotate(3deg) scale(1.08);
+        border-color:#ff4d4d;
+    }
+    100%{
+        transform:rotate(0deg) scale(1);
+        border-color:red;
+    }
+}
+
+.warningText{
+    display:block;
+    margin-top:6px;
+    color:red;
+    font-size:13px;
+    font-weight:bold;
+}
+/* Green moving circle around successful total ML */
+.milkSuccess{
+    display:inline-block;
+    padding:6px 12px;
+    border:3px solid green;
+    border-radius:999px;
+    animation:greenPulse 1s linear infinite;
+}
+
+@keyframes greenPulse{
+    0%{
+        transform:rotate(0deg) scale(1);
+        border-color:#2ecc71;
+    }
+    50%{
+        transform:rotate(-3deg) scale(1.08);
+        border-color:#27ae60;
+    }
+    100%{
+        transform:rotate(0deg) scale(1);
+        border-color:#2ecc71;
+    }
+}
 </style>
 </head>
 
@@ -637,8 +691,18 @@ function updateMilkTotal(){
         total += Number(select.value);
     });
 
-    table.querySelector(".milkTotal").textContent = total + " ML";
+const milkTotal = table.querySelector(".milkTotal");
 
+if(total >= 720){
+
+    milkTotal.innerHTML =
+        '<span class="milkSuccess">' + total + ' ML ✅</span>';
+
+}else{
+
+    milkTotal.innerHTML =
+        '<span class="milkWarning">' + total + ' ML ❌</span>';
+}
 
     // Count number of ***** entries
 let poopCount = 0;
@@ -653,6 +717,8 @@ table.querySelector(".poopStatus").innerHTML =
     "Pooped " + poopCount + " time" + (poopCount > 1 ? "s" : "") + " today."
     + "<br>今天大便" + poopCount + "次。";
 }
+
+
 
 function updateAllPageDates(){
 
