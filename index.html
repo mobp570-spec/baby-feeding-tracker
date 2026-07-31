@@ -915,6 +915,22 @@ setTimeout(() => {
 }, 100);
 }
 
+function isNextDayPage(){
+
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    const pageDate = new Date(
+        pages[currentPage]
+        .querySelector(".tableDate")
+        .dataset.date
+    );
+
+    pageDate.setHours(0,0,0,0);
+
+    return pageDate < today;
+}
+
 document.getElementById("add").onclick = function () {
 
     const now = new Date();
