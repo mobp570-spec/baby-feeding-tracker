@@ -225,6 +225,10 @@ input[type="checkbox"]{
 style="position:fixed; top:10px; left:10px; z-index:1000;">
     ⛶
 </button>
+<button id="deletePageBtn" onclick="deleteCurrentPage()"
+style="position:fixed; top:10px; left:95px; z-index:1000;">
+🗑
+</button>
 <button id="exitFullscreenBtn" onclick="exitFullscreen()"
 style="position:fixed; top:10px; left:10px; z-index:1000; display:none;">
     ✕
@@ -253,22 +257,6 @@ const diaper = ["Pee/尿尿","Poop/大便"];
 
 let pages=[];
 let currentPage=0;
-
-function isNextDayPage() {
-
-    const today = new Date();
-    today.setHours(0,0,0,0);
-
-    const pageDate = new Date(
-        pages[currentPage]
-            .querySelector(".tableDate")
-            .dataset.date
-    );
-
-    pageDate.setHours(0,0,0,0);
-
-    return pageDate < today;
-}
 
 function updateAddButton() {
     document.getElementById("add").style.display = "inline-block";
@@ -362,6 +350,7 @@ document.addEventListener("fullscreenchange", function () {
         enterBtn.style.display = "block";
         exitBtn.style.display = "none";
     }
+
 });
 
 // ===== SAVE & LOAD DATA =====
@@ -602,26 +591,38 @@ function showPage(index){
     updateAddButton();
 }
 
-function resetCurrentPageDate() {
+function deleteCurrentPage(){
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Don't allow deleting the only page
+    if (pages.length === 1){
+        alert("Cannot delete the only page.");
+        return;
+    }
 
-    const dateDiv = pages[currentPage].querySelector(".tableDate");
+    // Confirm deletion
+    if (!confirm("Delete this page?")){
+        return;
+    }
 
-    dateDiv.dataset.date = today.toISOString();
+    // Remove the current page from the DOM
+    pages[currentPage].remove();
 
-    dateDiv.innerHTML =
-        "DATE: " +
-        today.toLocaleDateString("en-GB", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric"
-        });
+    // Remove it from the pages array
+    pages.splice(currentPage, 1);
 
+    // If we deleted the last page, move to the previous one
+    if (currentPage >= pages.length){
+        currentPage = pages.length - 1;
+    }
+
+    // Renumber all page dates
+    updateAllPageDates();
+
+    // Show the current page
+    showPage(currentPage);
+
+    // Save everything
     saveData();
-
-    alert("Current page date has been reset.");
 }
 
 function updateMilkTotal(){
@@ -651,6 +652,36 @@ diaperSelects.forEach(select => {
 table.querySelector(".poopStatus").innerHTML =
     "Pooped " + poopCount + " time" + (poopCount > 1 ? "s" : "") + " today."
     + "<br>今天大便" + poopCount + "次。";
+}
+
+function updateAllPageDates(){
+
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    const lastIndex = pages.length - 1;
+
+    pages.forEach((page,index)=>{
+
+        const d = new Date(today);
+
+        // Difference from last page
+        d.setDate(today.getDate() - (lastIndex - index));
+
+        const dateDiv = page.querySelector(".tableDate");
+
+        dateDiv.dataset.date = d.toISOString();
+
+        dateDiv.innerHTML =
+            "DATE: " +
+            d.toLocaleDateString("en-GB",{
+                day:"2-digit",
+                month:"2-digit",
+                year:"numeric"
+            });
+    });
+
+    saveData();
 }
 
 function addRow(save = true){
@@ -833,7 +864,7 @@ document.getElementById("prevPage").onclick = function(){
 };
 
 loadData();
-resetCurrentPageDate();
+updateAllPageDates();
 
 </script>
 
