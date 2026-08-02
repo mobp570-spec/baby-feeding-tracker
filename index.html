@@ -897,6 +897,28 @@ clearBtn.onclick = function () {
 };
 
 clearCell.appendChild(clearBtn);
+let deleteBtn = document.createElement("button");
+deleteBtn.innerHTML = "Delete<br>删除";
+deleteBtn.style.marginTop = "5px";
+deleteBtn.style.backgroundColor = "#FFC5D3";
+
+deleteBtn.onclick = function () {
+
+    if (!confirm("Delete this row?")) return;
+
+    row.remove();
+
+    // Renumber line numbers
+    [...tbody.rows].forEach((r, i) => {
+        r.cells[0].textContent = i + 1;
+    });
+
+    updateMilkTotal();
+    saveData();
+};
+
+clearCell.appendChild(document.createElement("br"));
+clearCell.appendChild(deleteBtn);
 row.appendChild(clearCell);
 
 tbody.appendChild(row);
