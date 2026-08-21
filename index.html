@@ -353,7 +353,7 @@ function createSelect(options){
 
 const milk = [90,120,150];
 
-function createTimeButton(){
+//function createTimeButton(){
 
     let button = document.createElement("button");
     button.innerHTML = "Log Time<br>记录时间";
@@ -378,6 +378,136 @@ function createTimeButton(){
     };
 
     return button;
+}
+function createTimeButton(){
+
+    let container = document.createElement("div");
+    container.style.display = "flex";
+    container.style.flexDirection = "column";
+    container.style.gap = "5px";
+    container.style.alignItems = "center";
+
+    // Log current time button
+    let button = document.createElement("button");
+    button.innerHTML = "Log Time<br>记录时间";
+
+    button.onclick = function(){
+
+        let now = new Date();
+
+        let time = now.toLocaleTimeString([], {
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true
+        });
+
+        // Replace everything with the logged time
+        let text = document.createElement("span");
+        text.textContent = time;
+
+        container.parentNode.replaceChild(text, container);
+        saveData();
+    };
+
+    // Manual time selection area
+    let manualTime = document.createElement("div");
+    manualTime.style.display = "flex";
+    manualTime.style.gap = "3px";
+    manualTime.style.alignItems = "center";
+    manualTime.style.flexWrap = "wrap";
+    manualTime.style.justifyContent = "center";
+
+    // Hour selector
+    let hourSelect = document.createElement("select");
+
+    let hourPlaceholder = document.createElement("option");
+    hourPlaceholder.text = "Hour";
+    hourPlaceholder.value = "";
+    hourSelect.appendChild(hourPlaceholder);
+
+    for(let i = 1; i <= 12; i++){
+        let option = document.createElement("option");
+        option.value = i;
+        option.text = i;
+        hourSelect.appendChild(option);
+    }
+
+    // Minute selector
+    let minuteSelect = document.createElement("select");
+
+    let minutePlaceholder = document.createElement("option");
+    minutePlaceholder.text = "Min";
+    minutePlaceholder.value = "";
+    minuteSelect.appendChild(minutePlaceholder);
+
+    for(let i = 0; i < 60; i++){
+
+        let option = document.createElement("option");
+
+        let minute = String(i).padStart(2, "0");
+
+        option.value = minute;
+        option.text = minute;
+
+        minuteSelect.appendChild(option);
+    }
+
+    // AM / PM selector
+    let ampmSelect = document.createElement("select");
+
+    let ampmPlaceholder = document.createElement("option");
+    ampmPlaceholder.text = "AM/PM";
+    ampmPlaceholder.value = "";
+    ampmSelect.appendChild(ampmPlaceholder);
+
+    ["AM", "PM"].forEach(period => {
+
+        let option = document.createElement("option");
+        option.value = period;
+        option.text = period;
+
+        ampmSelect.appendChild(option);
+    });
+
+    // Manual Set Time button
+    let setTimeBtn = document.createElement("button");
+    setTimeBtn.innerHTML = "Set<br>设置";
+    setTimeBtn.style.padding = "6px 10px";
+    setTimeBtn.style.margin = "0";
+
+    setTimeBtn.onclick = function(){
+
+        let hour = hourSelect.value;
+        let minute = minuteSelect.value;
+        let ampm = ampmSelect.value;
+
+        if(hour === "" || minute === "" || ampm === ""){
+
+            alert("Please select Hour, Minute and AM/PM.\n请选择小时、分钟和上午/下午。");
+
+            return;
+        }
+
+        let time = hour + ":" + minute + " " + ampm;
+
+        // Replace everything with manually selected time
+        let text = document.createElement("span");
+        text.textContent = time;
+
+        container.parentNode.replaceChild(text, container);
+
+        saveData();
+    };
+
+    manualTime.appendChild(hourSelect);
+    manualTime.appendChild(minuteSelect);
+    manualTime.appendChild(ampmSelect);
+    manualTime.appendChild(setTimeBtn);
+
+    container.appendChild(button);
+    container.appendChild(manualTime);
+
+    return container;
 }
 
 function toggleFullscreen() {
