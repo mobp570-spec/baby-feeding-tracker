@@ -318,7 +318,7 @@ function updateAddButton() {
     document.getElementById("add").disabled = false;
 }
 
-function createMilkSelect(options){
+/*function createMilkSelect(options){
     let select = document.createElement("select");
 
     // Medicine option at the top (counts as 0 ML)
@@ -334,6 +334,31 @@ function createMilkSelect(options){
         opt.value = option;
         select.appendChild(opt);
     });
+
+    return select;
+}*/
+function createMilkSelect(options){
+    let select = document.createElement("select");
+
+    // Medicine option
+    let medicine = document.createElement("option");
+    medicine.text = "Medicine / 药物";
+    medicine.value = "0";
+    select.appendChild(medicine);
+
+    // Preset milk options
+    options.forEach(option=>{
+        let opt = document.createElement("option");
+        opt.text = option + " ML";
+        opt.value = option;
+        select.appendChild(opt);
+    });
+
+    // Manual ML option
+    let custom = document.createElement("option");
+    custom.text = "Type ML / 输入奶量";
+    custom.value = "custom";
+    select.appendChild(custom);
 
     return select;
 }
@@ -1133,7 +1158,7 @@ function addRow(save = true){
 
     row.appendChild(burpCell);
 
-    // Milk dropdown
+/*    // Milk dropdown
     let milkCell=document.createElement("td");
 
     let milkSelect=createMilkSelect(milk);
@@ -1144,7 +1169,76 @@ function addRow(save = true){
 };
     
     milkCell.appendChild(milkSelect);
-    row.appendChild(milkCell);
+    row.appendChild(milkCell);*/
+
+// Milk dropdown
+let milkCell = document.createElement("td");
+
+let milkSelect = createMilkSelect(milk);
+
+milkSelect.onchange = function(){
+
+    // User chooses Custom ML
+    if(milkSelect.value === "custom"){
+
+        let customML = prompt(
+            "Enter milk amount in ML:\n请输入奶量（ML）："
+        );
+
+        // Cancel or empty input
+        if(customML === null || customML.trim() === ""){
+
+            milkSelect.value = "0";
+
+        } else {
+
+            let amount = Number(customML);
+
+            // Validate input
+            if(isNaN(amount) || amount < 0){
+
+                alert(
+                    "Please enter a valid ML amount.\n请输入有效的奶量。"
+                );
+
+                milkSelect.value = "0";
+
+            } else {
+
+                // Add the typed amount into the dropdown
+                let existingOption = [...milkSelect.options].find(
+                    option => option.value === String(amount)
+                );
+
+                if(existingOption){
+
+                    milkSelect.value = String(amount);
+
+                } else {
+
+                    let customOption = document.createElement("option");
+
+                    customOption.text = amount + " ML";
+                    customOption.value = amount;
+
+                    // Insert before Custom ML option
+                    milkSelect.insertBefore(
+                        customOption,
+                        milkSelect.querySelector('option[value="custom"]')
+                    );
+
+                    milkSelect.value = String(amount);
+                }
+            }
+        }
+    }
+
+    updateMilkTotal();
+    saveData();
+};
+
+milkCell.appendChild(milkSelect);
+row.appendChild(milkCell);
 
 // Diaper dropdown
 let diaperCell = document.createElement("td");
