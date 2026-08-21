@@ -1,1422 +1,781 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Baby Feeding Tracker</title>
 
 <style>
+:root{
+    --pink-50:#fff8fa;
+    --pink-100:#fff0f4;
+    --pink-200:#ffdce7;
+    --pink-300:#ffc3d5;
+    --pink-400:#ef9db8;
+    --pink-500:#dc7197;
+    --pink-700:#a84265;
+    --ink:#35232b;
+    --muted:#8f6f7b;
+    --line:#f1d7df;
+    --white:#fff;
+    --success:#2f9d68;
+    --danger:#d95d73;
+    --shadow:0 12px 35px rgba(172,81,112,.12);
+}
+
+*{box-sizing:border-box}
 
 body{
     margin:0;
     min-height:100vh;
-    font-family:Arial,sans-serif;
-    padding:10px;
-
-    background-color:#fff;
-
-    background-image:
-        /* Top petal */
-        radial-gradient(circle at 30px 15px, #FFC5D3 8px, transparent 11px),
-
-        /* Upper-left petal */
-        radial-gradient(circle at 18px 24px, #FFC5D3 8px, transparent 11px),
-
-        /* Upper-right petal */
-        radial-gradient(circle at 42px 24px, #FFC5D3 8px, transparent 11px),
-
-        /* Bottom-left petal */
-        radial-gradient(circle at 23px 38px, #FFC5D3 8px, transparent 11px),
-
-        /* Bottom-right petal */
-        radial-gradient(circle at 38px 38px, #FFC5D3 8px, transparent 11px),
-
-        /* White flower center */
-        radial-gradient(circle at 30px 30px, white 5px, transparent 6px);
-
-    background-size:70px 70px;
-    background-repeat:repeat;
+    font-family:Arial, sans-serif;
+    color:var(--ink);
+    background:
+        radial-gradient(circle at 15px 15px, rgba(255,195,213,.38) 0 5px, transparent 6px),
+        linear-gradient(135deg,#fff 0%,#fff7fa 48%,#fff 100%);
+    background-size:55px 55px,auto;
 }
 
-/* Moving Mommy Banner */
-.banner{
-    width:calc(100% + 20px);
-    margin:45px -10px 15px;
-    overflow:hidden;
+button,input,select{font:inherit}
 
-    background:linear-gradient(90deg,#FFD6E8,#FFF5F8,#FFD6E8);
-
-    border:none;
-    border-radius:0;
-
-    padding:8px 0;
-    box-shadow:0 2px 8px rgba(229,138,164,.2);
+.app{
+    width:min(1100px,calc(100% - 24px));
+    margin:auto;
+    padding:18px 0 32px;
 }
 
-.banner-track{
+.topbar{
     display:flex;
-    width:max-content;
-    animation:marquee 12s linear infinite;
-    will-change:transform;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:14px;
 }
 
-.banner-track span{
-    flex-shrink:0;
-    white-space:nowrap;
-    padding-right:0;
-    font-size:17px;
-    font-weight:bold;
-    color:#D96C8D;
+.icon-btn{
+    width:42px;
+    height:42px;
+    display:grid;
+    place-items:center;
+    border:1px solid var(--line);
+    border-radius:13px;
+    background:rgba(255,255,255,.9);
+    color:var(--pink-700);
+    cursor:pointer;
+    box-shadow:0 4px 14px rgba(172,81,112,.08);
+    transition:.2s;
 }
 
-@keyframes marquee{
-    from{
-        transform:translateX(0);
-    }
-    to{
-        transform:translateX(-33.333%);
-    }
-}
+.icon-btn:hover{transform:translateY(-2px);background:var(--pink-50)}
 
-.banner:hover .banner-track{
-    animation-play-state:paused;
-}
-
-h2{
+.brand{
+    flex:1;
     text-align:center;
-    background:white;
-    border-radius:15px;
-    padding:10px 20px;
-    margin:15px auto;
-    width:fit-content;
-    box-shadow:0 2px 8px rgba(229,138,164,.2);
-    color:black;
+    padding:12px 16px;
+    border-radius:18px;
+    background:rgba(255,255,255,.88);
+    box-shadow:var(--shadow);
 }
 
-.page{
-    display:none;
+.brand h1{
+    margin:0;
+    font-size:clamp(20px,4vw,28px);
+    color:var(--pink-700);
 }
 
-.page.active{
-    display:block;
+.brand p{
+    margin:4px 0 0;
+    font-size:13px;
+    color:var(--muted);
 }
+
+.card{
+    background:rgba(255,255,255,.94);
+    border:1px solid rgba(241,215,223,.85);
+    border-radius:22px;
+    box-shadow:var(--shadow);
+    overflow:hidden;
+}
+
+.page-meta{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    padding:16px 18px;
+    border-bottom:1px solid var(--line);
+}
+
+.date-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:9px 13px;
+    border-radius:12px;
+    background:var(--pink-50);
+    color:var(--pink-700);
+    font-weight:700;
+}
+
+.page-info{
+    color:var(--muted);
+    font-size:13px;
+    text-align:right;
+}
+
+.table-wrap{overflow-x:auto}
 
 table{
     width:100%;
-    border-collapse:separate;
-    border-spacing:0;
-    background:white;
-    margin-bottom:15px;
-    border:1px solid #ccc;
-    border-radius:10px; /* Rounded corners */
-    overflow:hidden;
-}
-
-th,td{
-    border-right:1px solid #ccc;
-    border-bottom:1px solid #ccc;
-    padding:10px;
-    text-align:center;
-}
-
-/* Remove borders on the outside edges */
-th:last-child,
-td:last-child{
-    border-right:none;
-}
-
-tbody tr:last-child td,
-tfoot tr th{
-    border-bottom:none;
+    min-width:780px;
+    border-collapse:collapse;
 }
 
 th{
-    background-color: #FFE5E7;
+    padding:12px 10px;
+    background:var(--pink-100);
+    color:var(--pink-700);
+    font-size:13px;
 }
+
+td{
+    padding:10px;
+    border-top:1px solid #f7e7ec;
+    text-align:center;
+    vertical-align:middle;
+}
+
+tbody tr{transition:.18s}
+tbody tr:hover{background:#fffafd}
 
 select{
     width:100%;
-    padding:8px 34px 8px 10px;
-    font-size:15px;
-    font-weight:600;
-    color:#555;
-
-    border:1px solid #F5B6C8;
-    border-radius:8px;
-
-    background:
-        linear-gradient(180deg,#FFF8FA,#FFECEF);
-
-    appearance:none;
-    -webkit-appearance:none;
-    -moz-appearance:none;
-
+    min-width:92px;
+    padding:9px 28px 9px 10px;
+    border:1px solid var(--pink-300);
+    border-radius:10px;
+    color:var(--ink);
+    background-color:#fff;
     cursor:pointer;
-    transition:.2s;
-
-    background-image:
-        linear-gradient(45deg, transparent 50%, #E58AA4 50%),
-        linear-gradient(135deg, #E58AA4 50%, transparent 50%);
-
-    background-position:
-        calc(100% - 16px) calc(50% - 2px),
-        calc(100% - 11px) calc(50% - 2px);
-
-    background-size:6px 6px;
-    background-repeat:no-repeat;
 }
 
-select:hover{
-    background:linear-gradient(180deg,#FFF4F7,#FFE2EA);
-    border-color:#E58AA4;
-}
-
-select:focus{
+select:focus,input:focus{
     outline:none;
-    border-color:#D96C8D;
-    box-shadow:0 0 0 3px rgba(233,143,170,.25);
+    border-color:var(--pink-500);
+    box-shadow:0 0 0 3px rgba(220,113,151,.15);
 }
 
-button{
-    padding:10px 18px;
-    margin:5px;
-    font-size:15px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    background-color: #FFD1DC;
+.check{
+    width:19px;
+    height:19px;
+    accent-color:var(--pink-500);
+    cursor:pointer;
+}
+
+.time-box{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:7px;
+}
+
+.manual-time{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:3px;
+    padding:5px;
+    border:1px solid var(--pink-200);
+    border-radius:11px;
+    background:var(--pink-50);
+}
+
+.manual-time select{
+    min-width:0;
     width:auto;
-    height:auto;
+    padding:5px 7px;
+    border:0;
+    background:transparent;
+}
+
+.time-value{
+    font-weight:700;
+    color:var(--pink-700);
     white-space:nowrap;
 }
 
-button:disabled{
-    color: black;
-    opacity:1;
+.btn{
+    border:0;
+    border-radius:11px;
+    padding:10px 14px;
+    cursor:pointer;
+    font-weight:700;
+    transition:.2s;
 }
 
+.btn:hover{transform:translateY(-2px)}
+.btn:active{transform:translateY(0)}
 
-input[type="checkbox"]{
-    transform:scale(1.3);
+.btn-primary{
+    background:linear-gradient(135deg,var(--pink-500),var(--pink-400));
+    color:white;
+    box-shadow:0 7px 16px rgba(220,113,151,.24);
 }
 
-#pageInfo{
-    text-align:center;
-    font-weight:bold;
-    margin-bottom:10px;
-}
-.tableDate{
-    font-weight:bold;
-    margin-bottom:8px;
-    text-align:left;
-    color:black;
-    font-size:16px;
-
-    background:#fff;
-    border:1px solid #ccc;
-    border-radius:10px;
-    padding:10px 15px;
-    display:inline-block;
-}
-/* Red moving circle around total ML */
-.milkWarning{
-    display:inline-block;
-    padding:6px 12px;
-    border:3px solid red;
-    border-radius:999px;
-    animation:redPulse 1s linear infinite;
+.btn-soft{
+    background:var(--pink-100);
+    color:var(--pink-700);
 }
 
-@keyframes redPulse{
-    0%{
-        transform:rotate(0deg) scale(1);
-        border-color:red;
-    }
-    50%{
-        transform:rotate(3deg) scale(1.08);
-        border-color:#ff4d4d;
-    }
-    100%{
-        transform:rotate(0deg) scale(1);
-        border-color:red;
-    }
+.btn-danger{
+    background:#fff1f3;
+    color:var(--danger);
 }
 
-.warningText{
+.btn-small{
+    padding:7px 10px;
+    font-size:12px;
+}
+
+.action-cell{
+    display:flex;
+    justify-content:center;
+    gap:6px;
+    flex-wrap:wrap;
+}
+
+.summary{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    padding:16px 18px;
+    border-top:1px solid var(--line);
+    background:linear-gradient(180deg,#fff,#fff9fb);
+}
+
+.summary-item{
+    padding:13px;
+    border:1px solid var(--line);
+    border-radius:15px;
+    background:white;
+}
+
+.summary-label{
     display:block;
-    margin-top:6px;
-    color:red;
-    font-size:13px;
-    font-weight:bold;
-}
-/* Green moving circle around successful total ML */
-.milkSuccess{
-    display:inline-block;
-    padding:6px 12px;
-    border:3px solid green;
-    border-radius:999px;
-    animation:greenPulse 1s linear infinite;
+    color:var(--muted);
+    font-size:12px;
+    margin-bottom:5px;
 }
 
-@keyframes greenPulse{
-    0%{
-        transform:rotate(0deg) scale(1);
-        border-color:#2ecc71;
-    }
-    50%{
-        transform:rotate(-3deg) scale(1.08);
-        border-color:#27ae60;
-    }
-    100%{
-        transform:rotate(0deg) scale(1);
-        border-color:#2ecc71;
-    }
+.summary-value{
+    font-size:19px;
+    font-weight:800;
+}
+
+.status-success{color:var(--success)}
+.status-warning{color:var(--danger)}
+
+.controls{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:9px;
+    padding:18px 0 0;
+}
+
+.empty{
+    padding:28px;
+    text-align:center;
+    color:var(--muted);
+}
+
+@media (max-width:600px){
+    .app{width:min(100% - 16px,1100px);padding-top:8px}
+    .topbar{align-items:flex-start}
+    .brand{padding:10px}
+    .brand h1{font-size:19px}
+    .summary{grid-template-columns:1fr}
+    .page-meta{padding:13px}
+    .controls .btn{flex:1}
 }
 </style>
 </head>
 
 <body>
-    
-<button id="fullscreenBtn" onclick="toggleFullscreen()"
-style="position:fixed; top:10px; left:10px; z-index:1000;">
-    ⛶
-</button>
-<button id="deletePageBtn" onclick="deleteCurrentPage()"
-style="position:fixed; top:10px; left:95px; z-index:1000;">
-🗑
-</button>
-<button id="exitFullscreenBtn" onclick="exitFullscreen()"
-style="position:fixed; top:10px; left:10px; z-index:1000; display:none;">
-    ✕
-</button>
+<main class="app">
+    <div class="topbar">
+        <button class="icon-btn" id="fullscreenBtn" title="Fullscreen">⛶</button>
 
-<h2>Baby Feeding Tracker ✨</h2>
-<h2>宝宝喂养追踪表 ✨</h2>
+        <div class="brand">
+            <h1>Baby Feeding Tracker ✨</h1>
+        </div>
 
-<div id="pageInfo">
-    Page 1 of 1<br>
-    第1页，共1页
-</div>
-<div id="pages"></div>
+        <button class="icon-btn" id="deletePageBtn" title="Delete / Clear current page" aria-label="Delete or clear current page">🗑</button>
+    </div>
 
-<div style="text-align:center;">
-    <button id="add">Add / 添加一行</button>
-    <br>
-    <button id="prevPage">⬅ Previous<br>上一页</button>
-    <button id="nextPage">Next Page ➜<br>下一页</button>
-</div>
+    <section class="card">
+        <div id="pages"></div>
+    </section>
+
+    <div class="controls">
+        <button class="btn btn-primary" id="addBtn">＋ Add Row<br>添加一行</button>
+        <button class="btn btn-soft" id="prevPageBtn">← Previous<br>上一页</button>
+        <button class="btn btn-soft" id="nextPageBtn">Next →<br>下一页</button>
+    </div>
+</main>
 
 <script>
+const STORAGE_KEY = "babyTrackerData";
+const MILK_OPTIONS = [90, 120, 150];
+const DIAPER_OPTIONS = ["Pee/尿尿", "Poop/大便"];
 
+let pages = [];
+let currentPage = 0;
+let loadingData = false;
 
-const diaper = ["Pee/尿尿","Poop/大便"];
+const $ = selector => document.querySelector(selector);
 
-let pages=[];
-let currentPage=0;
-let loadingData=false;
-
-function updateAddButton() {
-    document.getElementById("add").style.display = "inline-block";
-    document.getElementById("add").disabled = false;
+function formatDate(date){
+    return new Intl.DateTimeFormat("en-GB",{
+        day:"2-digit", month:"2-digit", year:"numeric"
+    }).format(date);
 }
 
-/*function createMilkSelect(options){
-    let select = document.createElement("select");
+function dateKey(date){
+    const d = new Date(date);
+    d.setHours(0,0,0,0);
+    return d.toISOString();
+}
 
-    // Medicine option at the top (counts as 0 ML)
-    let medicine = document.createElement("option");
-    medicine.text = "Medicine / 药物";
-    medicine.value = 0;
-    select.appendChild(medicine);
-
-    // Milk options
-    options.forEach(option=>{
-        let opt = document.createElement("option");
-        opt.text = option + " ML";
-        opt.value = option;
-        select.appendChild(opt);
+function createSelect(options, value = ""){
+    const select = document.createElement("select");
+    options.forEach(item => {
+        const option = document.createElement("option");
+        option.value = String(item.value ?? item);
+        option.textContent = item.label ?? item;
+        select.appendChild(option);
     });
-
-    return select;
-}*/
-function createMilkSelect(options){
-    let select = document.createElement("select");
-
-    // Medicine option
-    let medicine = document.createElement("option");
-    medicine.text = "Medicine / 药物";
-    medicine.value = "0";
-    select.appendChild(medicine);
-
-    // Preset milk options
-    options.forEach(option=>{
-        let opt = document.createElement("option");
-        opt.text = option + " ML";
-        opt.value = option;
-        select.appendChild(opt);
-    });
-
-    // Manual ML option
-    let custom = document.createElement("option");
-    custom.text = "Type ML / 输入奶量";
-    custom.value = "custom";
-    select.appendChild(custom);
-
+    if(value !== "") select.value = String(value);
     return select;
 }
 
-function createSelect(options){
-    let select = document.createElement("select");
+function createMilkSelect(value = "0"){
+    const options = [
+        {label:"Medicine / 药物", value:"0"},
+        ...MILK_OPTIONS.map(amount => ({label:`${amount} ML`, value:String(amount)})),
+        {label:"Type ML / 输入奶量", value:"custom"}
+    ];
 
-    options.forEach(option=>{
-        let opt = document.createElement("option");
-        opt.text = option;
-        opt.value = option;
-        select.appendChild(opt);
-    });
+    const select = createSelect(options);
+    const savedValue = String(value);
 
-    return select;
-}
-
-const milk = [90,120,150];
-
-/*function createTimeButton(){
-
-    let button = document.createElement("button");
-    button.innerHTML = "Log Time<br>记录时间";
-
-    button.onclick = function(){
-
-        let now = new Date();
-
-        let time = now.toLocaleTimeString([], {
-            hour: "numeric",
-            minute: "2-digit",
-            hour12: true
-        });
-
-        // Replace the button with plain text
-        let text = document.createElement("span");
-        text.textContent = time;
-
-        button.parentNode.replaceChild(text, button);
-        saveData();
-        
-    };
-
-    return button; } */
-
-/*function createTimeButton(){
-
-    let container = document.createElement("div");
-    container.style.display = "flex";
-    container.style.flexDirection = "column";
-    container.style.gap = "5px";
-    container.style.alignItems = "center";
-
-    // Log current time button
-    let button = document.createElement("button");
-    button.innerHTML = "Log Time<br>记录时间";
-
-    button.onclick = function(){
-
-        let now = new Date();
-
-        let time = now.toLocaleTimeString([], {
-            hour: "numeric",
-            minute: "2-digit",
-            hour12: true
-        });
-
-        // Replace everything with the logged time
-        let text = document.createElement("span");
-        text.textContent = time;
-
-        container.parentNode.replaceChild(text, container);
-        saveData();
-    };
-
-    // Manual time selection area
-    let manualTime = document.createElement("div");
-    manualTime.style.display = "flex";
-    manualTime.style.gap = "3px";
-    manualTime.style.alignItems = "center";
-    manualTime.style.flexWrap = "wrap";
-    manualTime.style.justifyContent = "center";
-
-    // Hour selector
-    let hourSelect = document.createElement("select");
-
-    let hourPlaceholder = document.createElement("option");
-    hourPlaceholder.text = "Hour";
-    hourPlaceholder.value = "";
-    hourSelect.appendChild(hourPlaceholder);
-
-    for(let i = 1; i <= 12; i++){
-        let option = document.createElement("option");
-        option.value = i;
-        option.text = i;
-        hourSelect.appendChild(option);
+    if([...select.options].some(option => option.value === savedValue)){
+        select.value = savedValue;
+    }else if(savedValue !== "custom" && !Number.isNaN(Number(savedValue))){
+        addCustomMilkOption(select, savedValue);
+        select.value = savedValue;
     }
 
-    // Minute selector
-    let minuteSelect = document.createElement("select");
+    select.addEventListener("change", () => {
+        if(select.value === "custom"){
+            const input = prompt("Enter milk amount in ML:\n请输入奶量（ML）：");
+            const amount = input === null ? null : Number(input.trim());
 
-    let minutePlaceholder = document.createElement("option");
-    minutePlaceholder.text = "Min";
-    minutePlaceholder.value = "";
-    minuteSelect.appendChild(minutePlaceholder);
-
-    for(let i = 0; i < 60; i++){
-
-        let option = document.createElement("option");
-
-        let minute = String(i).padStart(2, "0");
-
-        option.value = minute;
-        option.text = minute;
-
-        minuteSelect.appendChild(option);
-    }
-
-    // AM / PM selector
-    let ampmSelect = document.createElement("select");
-
-    let ampmPlaceholder = document.createElement("option");
-    ampmPlaceholder.text = "AM/PM";
-    ampmPlaceholder.value = "";
-    ampmSelect.appendChild(ampmPlaceholder);
-
-    ["AM", "PM"].forEach(period => {
-
-        let option = document.createElement("option");
-        option.value = period;
-        option.text = period;
-
-        ampmSelect.appendChild(option);
-    });
-
-    // Manual Set Time button
-    let setTimeBtn = document.createElement("button");
-    setTimeBtn.innerHTML = "Set<br>设置";
-    setTimeBtn.style.padding = "6px 10px";
-    setTimeBtn.style.margin = "0";
-
-    setTimeBtn.onclick = function(){
-
-        let hour = hourSelect.value;
-        let minute = minuteSelect.value;
-        let ampm = ampmSelect.value;
-
-        if(hour === "" || minute === "" || ampm === ""){
-
-            alert("Please select Hour, Minute and AM/PM.\n请选择小时、分钟和上午/下午。");
-
-            return;
+            if(amount === null || input.trim() === "" || Number.isNaN(amount) || amount < 0){
+                select.value = "0";
+            }else{
+                addCustomMilkOption(select, String(amount));
+                select.value = String(amount);
+            }
         }
-
-        let time = hour + ":" + minute + " " + ampm;
-
-        // Replace everything with manually selected time
-        let text = document.createElement("span");
-        text.textContent = time;
-
-        container.parentNode.replaceChild(text, container);
-
+        refreshCurrentPage();
         saveData();
-    };
-
-    manualTime.appendChild(hourSelect);
-    manualTime.appendChild(minuteSelect);
-    manualTime.appendChild(ampmSelect);
-    manualTime.appendChild(setTimeBtn);
-
-    container.appendChild(button);
-    container.appendChild(manualTime);
-
-    return container;
-}*/
-
-function createTimeButton(){
-
-    let container = document.createElement("div");
-    container.style.display = "flex";
-    container.style.flexDirection = "column";
-    container.style.gap = "6px";
-    container.style.alignItems = "center";
-
-    // Automatic current time button
-    let button = document.createElement("button");
-    button.innerHTML = "Log Time<br>记录时间";
-
-    button.onclick = function(){
-
-        let now = new Date();
-
-        let time = now.toLocaleTimeString([], {
-            hour: "numeric",
-            minute: "2-digit",
-            hour12: true
-        });
-
-        let text = document.createElement("span");
-        text.textContent = time;
-
-        container.parentNode.replaceChild(text, container);
-        saveData();
-    };
-
-
-    // ===== ONE MANUAL TIME BOX =====
-    let manualBox = document.createElement("div");
-
-    manualBox.style.display = "flex";
-    manualBox.style.alignItems = "center";
-    manualBox.style.justifyContent = "center";
-    manualBox.style.gap = "3px";
-    manualBox.style.padding = "6px";
-    manualBox.style.background = "#FFF5F8";
-    manualBox.style.border = "1px solid #F5B6C8";
-    manualBox.style.borderRadius = "10px";
-    manualBox.style.width = "fit-content";
-
-
-    // Hour
-    let hourSelect = document.createElement("select");
-    hourSelect.style.width = "48px";
-    hourSelect.style.padding = "5px";
-    hourSelect.style.fontSize = "13px";
-    hourSelect.style.border = "none";
-    hourSelect.style.background = "transparent";
-
-    let hourPlaceholder = document.createElement("option");
-    hourPlaceholder.text = "HH";
-    hourPlaceholder.value = "";
-    hourSelect.appendChild(hourPlaceholder);
-
-    for(let i = 1; i <= 12; i++){
-        let option = document.createElement("option");
-        option.value = i;
-        option.text = i;
-        hourSelect.appendChild(option);
-    }
-
-
-    // Colon
-    let colon = document.createElement("span");
-    colon.textContent = ":";
-    colon.style.fontWeight = "bold";
-
-
-    // Minute
-    let minuteSelect = document.createElement("select");
-    minuteSelect.style.width = "52px";
-    minuteSelect.style.padding = "5px";
-    minuteSelect.style.fontSize = "13px";
-    minuteSelect.style.border = "none";
-    minuteSelect.style.background = "transparent";
-
-    let minutePlaceholder = document.createElement("option");
-    minutePlaceholder.text = "MM";
-    minutePlaceholder.value = "";
-    minuteSelect.appendChild(minutePlaceholder);
-
-    for(let i = 0; i < 60; i++){
-        let option = document.createElement("option");
-
-        let minute = String(i).padStart(2, "0");
-
-        option.value = minute;
-        option.text = minute;
-
-        minuteSelect.appendChild(option);
-    }
-
-
-    // AM / PM
-    let ampmSelect = document.createElement("select");
-    ampmSelect.style.width = "58px";
-    ampmSelect.style.padding = "5px";
-    ampmSelect.style.fontSize = "13px";
-    ampmSelect.style.border = "none";
-    ampmSelect.style.background = "transparent";
-
-    ["AM", "PM"].forEach(period => {
-        let option = document.createElement("option");
-        option.value = period;
-        option.text = period;
-        ampmSelect.appendChild(option);
     });
 
+    return select;
+}
 
-    // Set button
-    let setTimeBtn = document.createElement("button");
-    setTimeBtn.textContent = "✓";
-    setTimeBtn.style.padding = "5px 8px";
-    setTimeBtn.style.margin = "0";
-    setTimeBtn.style.fontSize = "14px";
-    setTimeBtn.style.borderRadius = "7px";
+function addCustomMilkOption(select, amount){
+    const exists = [...select.options].some(option => option.value === String(amount));
+    if(exists) return;
 
+    const option = document.createElement("option");
+    option.value = String(amount);
+    option.textContent = `${amount} ML`;
 
-    setTimeBtn.onclick = function(){
+    select.insertBefore(option, select.querySelector('option[value="custom"]'));
+}
 
-        let hour = hourSelect.value;
-        let minute = minuteSelect.value;
-        let ampm = ampmSelect.value;
+function createTimeControl(savedTime = ""){
+    if(savedTime){
+        return createLoggedTime(savedTime);
+    }
 
-        if(hour === "" || minute === ""){
+    const container = document.createElement("div");
+    container.className = "time-box";
 
+    const logButton = document.createElement("button");
+    logButton.className = "btn btn-primary btn-small";
+    logButton.innerHTML = "Log Time<br>记录时间";
+    logButton.addEventListener("click", () => {
+        const time = new Date().toLocaleTimeString([],{
+            hour:"numeric", minute:"2-digit", hour12:true
+        });
+        container.replaceWith(createLoggedTime(time));
+        saveData();
+    });
+
+    const manual = document.createElement("div");
+    manual.className = "manual-time";
+
+    const hours = createSelect([
+        {label:"HH", value:""},
+        ...Array.from({length:12},(_,i)=>({label:String(i+1),value:String(i+1)}))
+    ]);
+
+    const minutes = createSelect([
+        {label:"MM", value:""},
+        ...Array.from({length:60},(_,i)=>{
+            const value = String(i).padStart(2,"0");
+            return {label:value,value};
+        })
+    ]);
+
+    const period = createSelect(["AM","PM"]);
+
+    const setButton = document.createElement("button");
+    setButton.className = "btn btn-soft btn-small";
+    setButton.textContent = "✓";
+
+    setButton.addEventListener("click", () => {
+        if(!hours.value || !minutes.value){
             alert("Please select the time.\n请选择时间。");
             return;
         }
 
-        let time = hour + ":" + minute + " " + ampm;
-
-        let text = document.createElement("span");
-        text.textContent = time;
-        text.style.fontWeight = "bold";
-
-        container.parentNode.replaceChild(text, container);
-
+        const time = `${hours.value}:${minutes.value} ${period.value}`;
+        container.replaceWith(createLoggedTime(time));
         saveData();
-    };
+    });
 
-
-    // Put everything inside ONE box
-    manualBox.appendChild(hourSelect);
-    manualBox.appendChild(colon);
-    manualBox.appendChild(minuteSelect);
-    manualBox.appendChild(ampmSelect);
-    manualBox.appendChild(setTimeBtn);
-
-    container.appendChild(button);
-    container.appendChild(manualBox);
-
+    manual.append(hours, document.createTextNode(":"), minutes, period, setButton);
+    container.append(logButton, manual);
     return container;
 }
 
-function toggleFullscreen() {
-
-    if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen();
-    }
-
+function createLoggedTime(time){
+    const span = document.createElement("span");
+    span.className = "time-value";
+    span.textContent = time;
+    return span;
 }
 
-function exitFullscreen() {
-    if (document.fullscreenElement) {
-        document.exitFullscreen();
-    }
-}
-
-document.addEventListener("fullscreenchange", function () {
-    const enterBtn = document.getElementById("fullscreenBtn");
-    const exitBtn = document.getElementById("exitFullscreenBtn");
-
-    if (document.fullscreenElement) {
-        enterBtn.style.display = "none";
-        exitBtn.style.display = "block";
-    } else {
-        enterBtn.style.display = "block";
-        exitBtn.style.display = "none";
-    }
-
-});
-
-// ===== SAVE & LOAD DATA =====
-
-function saveData() {
-
-    let data = {
-        currentPage: currentPage,
-        pages: []
-    };
-
-    pages.forEach(page => {
-
-        let pageData = [];
-
-        page.querySelectorAll("tbody tr").forEach(row => {
-
-            let time =
-                row.cells[1].querySelector("span") ?
-                row.cells[1].querySelector("span").textContent :
-                "";
-
-        pageData.push({
-    time: time,
-    burp: row.cells[2]?.querySelector("input")?.checked || false,
-    milk: row.cells[3]?.querySelector("select")?.value || "0",
-    diaper: row.cells[4]?.querySelector("select")?.value || "Pee/尿尿"
-});
-        });
-
-data.pages.push({
-    date: page.querySelector(".tableDate").dataset.date,
-    rows: pageData
-});
-
-    });
-
-    localStorage.setItem("babyTrackerData", JSON.stringify(data));
-
-}
-
-function loadData() {
-
-    loadingData = true;
-
-    let saved = localStorage.getItem("babyTrackerData");
-
-    if (!saved) {
-        createPage();
-        addRow();
-        loadingData = false;
-        return;
-    }
-
-    let data = JSON.parse(saved);
-
-    document.getElementById("pages").replaceChildren();
-    pages = [];
-
-    data.pages.forEach((pageData, index) => {
-
-        let rows = [];
-        let date;
-
-
-        // ===== OLD SAVE FORMAT =====
-        if (Array.isArray(pageData)) {
-
-            rows = pageData;
-
-            let d = new Date();
-            d.setHours(0,0,0,0);
-            d.setDate(d.getDate() + index);
-
-            date = d.toISOString();
-
-
-        } else {
-
-            // ===== NEW SAVE FORMAT =====
-            rows = pageData.rows || [];
-
-
-            if (pageData.date) {
-
-                let testDate = new Date(pageData.date);
-
-                if (isNaN(testDate.getTime())) {
-                    testDate = new Date();
-                }
-
-                testDate.setHours(0,0,0,0);
-                date = testDate.toISOString();
-
-
-            } else {
-
-                let d = new Date();
-                d.setHours(0,0,0,0);
-
-                date = d.toISOString();
-
-            }
-        }
-
-
-        // Create page
-        createPage(date);
-
-
-        // IMPORTANT:
-        // Point addRow() to the page currently loading
-        currentPage = pages.length - 1;
-
-
-        let tbody = pages[currentPage].querySelector("tbody");
-        tbody.innerHTML = "";
-
-
-        rows.forEach(r => {
-
-            addRow(false);
-
-
-            let row = tbody.lastElementChild;
-
-
-            if (!row) return;
-
-
-            // Restore Time
-            if (r.time) {
-
-                row.cells[1].innerHTML = "";
-
-                let span = document.createElement("span");
-                span.textContent = r.time;
-
-                row.cells[1].appendChild(span);
-            }
-
-
-            // Restore Burp
-            let burp =
-                row.cells[2].querySelector("input");
-
-            if (burp) {
-                burp.checked = !!r.burp;
-            }
-
-
-            // Restore Milk
-            let milkSelect =
-                row.cells[3].querySelector("select");
-
-            if (milkSelect) {
-                milkSelect.value = String(r.milk ?? "0");
-            }
-
-
-            // Restore Diaper
-            let diaperSelect =
-                row.cells[4].querySelector("select");
-
-            if (diaperSelect) {
-                diaperSelect.value =
-                    r.diaper || "Pee/尿尿";
-            }
-
-        });
-
-
-        updateMilkTotal();
-
-    });
-
-
-
-    // If no pages exist, create a new one
-    if (pages.length === 0) {
-
-        createPage();
-        addRow();
-
-    }
-
-
-
-    // Restore the last opened page
-    currentPage = Math.min(
-        data.currentPage || 0,
-        pages.length - 1
-    );
-
-
-    showPage(currentPage);
-
-
-    loadingData = false;
-
-}
-
-function createPage(dateString = null){
-
-    let page = document.createElement("div");
+function createPage(dateString = dateKey(new Date()), rows = []){
+    const page = document.createElement("div");
     page.className = "page";
 
-    // Use supplied date or today's date
-    let pageDate = dateString
-        ? new Date(dateString)
-        : new Date();
+    const date = new Date(dateString);
+    date.setHours(0,0,0,0);
 
-    // Remove time portion to avoid timezone/date shift bugs
-    pageDate.setHours(0, 0, 0, 0);
+    page.dataset.date = date.toISOString();
 
-    let dateDiv = document.createElement("div");
-    dateDiv.className = "tableDate";
+    page.innerHTML = `
+        <div class="page-meta">
+            <div class="date-badge">📅 <span>${formatDate(date)}</span></div>
+            <div class="page-info"></div>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Line<br>行号</th>
+                        <th>Time<br>时间</th>
+                        <th>Burp<br>拍嗝</th>
+                        <th>Milk<br>奶量</th>
+                        <th>Diaper<br>尿布</th>
+                        <th>Action<br>操作</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div class="summary">
+            <div class="summary-item">
+                <span class="summary-label">Total Milk / 总奶量</span>
+                <span class="summary-value milkTotal">0 ML</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Poop Count / 大便次数</span>
+                <span class="summary-value poopTotal">0 time today</span>
+            </div>
+        </div>
+    `;
 
-    // Save the exact page date
-    dateDiv.dataset.date = pageDate.toISOString();
+    $("#pages").appendChild(page);
+    pages.push(page);
 
-    dateDiv.innerHTML =
-        "DATE: " +
-        pageDate.toLocaleDateString("en-GB", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric"
-        });
+    rows.forEach(row => addRowToPage(page, row, false));
+    if(rows.length === 0) addRowToPage(page, {}, false);
 
-    page.appendChild(dateDiv);
-
-    let table = document.createElement("table");
-
-    table.innerHTML = `
-<thead>
-    <tr>
-        <th>Line No.<br>行号</th>
-        <th>Time<br>时间</th>
-        <th>Burp<br>拍嗝</th>
-        <th>Milk<br>奶量</th>
-        <th>Diaper<br>尿布</th>
-        <th></th>
-    </tr>
-</thead>
-
-<tbody></tbody>
-
-<tfoot>
-<tr>
-    <th colspan="3">
-        Total Milk<br>总奶量
-    </th>
-
-    <th class="milkTotal">
-        0 ML
-    </th>
-
-    <th class="poopStatus">
-        Pooped 0 time today.<br>今天大便0次。
-    </th>
-
-    <th></th>
-</tr>
-</tfoot>
-`;
-
-    page.appendChild(table);
-    
-    document.getElementById("pages").appendChild(page);
-
-pages.push(page);
-
-// Only show automatically when creating a new page normally
-if (!loadingData) {
-    showPage(pages.length - 1);
+    updatePageSummary(page);
+    return page;
 }
 
-document.getElementById("pageInfo").innerHTML =
-    "Page " + (currentPage + 1) + " of " + pages.length +
-    "<br>第" + (currentPage + 1) + "页，共" + pages.length + "页";
+function addRowToPage(page, data = {}, shouldSave = true){
+    const tbody = page.querySelector("tbody");
+    const row = document.createElement("tr");
+
+    const lineCell = document.createElement("td");
+    row.appendChild(lineCell);
+
+    const timeCell = document.createElement("td");
+    timeCell.appendChild(createTimeControl(data.time || ""));
+    row.appendChild(timeCell);
+
+    const burpCell = document.createElement("td");
+    const burp = document.createElement("input");
+    burp.type = "checkbox";
+    burp.className = "check";
+    burp.checked = Boolean(data.burp);
+    burp.addEventListener("change", saveData);
+    burpCell.appendChild(burp);
+    row.appendChild(burpCell);
+
+    const milkCell = document.createElement("td");
+    milkCell.appendChild(createMilkSelect(data.milk ?? "0"));
+    row.appendChild(milkCell);
+
+    const diaperCell = document.createElement("td");
+    const diaper = createSelect(DIAPER_OPTIONS, data.diaper || DIAPER_OPTIONS[0]);
+    diaper.addEventListener("change", () => {
+        updatePageSummary(page);
+        saveData();
+    });
+    diaperCell.appendChild(diaper);
+    row.appendChild(diaperCell);
+
+    const actionCell = document.createElement("td");
+    actionCell.className = "action-cell";
+
+    const clearButton = document.createElement("button");
+    clearButton.className = "btn btn-soft btn-small";
+    clearButton.textContent = "Clear";
+    clearButton.addEventListener("click", () => {
+        timeCell.replaceChildren(createTimeControl());
+        burp.checked = false;
+        milkCell.replaceChildren(createMilkSelect("0"));
+        diaper.value = DIAPER_OPTIONS[0];
+        updatePageSummary(page);
+        saveData();
+    });
+
+    const deleteButton = document.createElement("button");
+    deleteButton.className = "btn btn-danger btn-small";
+    deleteButton.textContent = "Delete";
+    deleteButton.addEventListener("click", () => {
+        if(!confirm("Delete this row?")) return;
+        row.remove();
+        renumberRows(page);
+        updatePageSummary(page);
+        saveData();
+    });
+
+    actionCell.append(clearButton, deleteButton);
+    row.appendChild(actionCell);
+
+    tbody.appendChild(row);
+    renumberRows(page);
+    updatePageSummary(page);
+
+    if(shouldSave) saveData();
+}
+
+function renumberRows(page){
+    [...page.querySelectorAll("tbody tr")].forEach((row,index) => {
+        row.cells[0].textContent = index + 1;
+    });
+}
+
+function updatePageSummary(page){
+    const milkSelects = page.querySelectorAll("tbody td:nth-child(4) select");
+    const diaperSelects = page.querySelectorAll("tbody td:nth-child(5) select");
+
+    const total = [...milkSelects].reduce((sum, select) => {
+        return sum + (Number(select.value) || 0);
+    }, 0);
+
+    const poopCount = [...diaperSelects]
+        .filter(select => select.value === "Poop/大便").length;
+
+    const milkTotal = page.querySelector(".milkTotal");
+    milkTotal.textContent = `${total} ML`;
+    milkTotal.className = `summary-value milkTotal ${
+        total >= 720 ? "status-success" : "status-warning"
+    }`;
+
+    page.querySelector(".poopTotal").textContent =
+        `${poopCount} time${poopCount === 1 ? "" : "s"} today · 今天大便${poopCount}次`;
+}
+
+function updatePageInfo(){
+    $(".page-info").innerHTML =
+        `Page ${currentPage + 1} of ${pages.length}<br>第${currentPage + 1}页，共${pages.length}页`;
 }
 
 function showPage(index){
+    if(index < 0 || index >= pages.length) return;
 
-    pages.forEach(p => p.classList.remove("active"));
-
-    pages[index].classList.add("active");
-
+    pages.forEach((page,i) => page.style.display = i === index ? "block" : "none");
     currentPage = index;
 
-    // Update page number
-    document.getElementById("pageInfo").innerHTML =
-        "Page " + (currentPage + 1) + " of " + pages.length +
-        "<br>第" + (currentPage + 1) + "页，共" + pages.length + "页";
+    updatePageInfo();
+    updateNavigation();
+    updatePageSummary(pages[currentPage]);
+}
 
-    // Hide Previous button on first page only
-    document.getElementById("prevPage").style.display =
-        currentPage === 0 ? "none" : "inline-block";
+function updateNavigation(){
+    $("#prevPageBtn").style.display = currentPage === 0 ? "none" : "";
+    $("#nextPageBtn").textContent =
+        currentPage < pages.length - 1 ? "Next →" : "Next Day →";
+}
 
-    updateMilkTotal();
-    updateAddButton();
+function refreshCurrentPage(){
+    if(pages[currentPage]) updatePageSummary(pages[currentPage]);
+}
+
+function getPageRows(page){
+    return [...page.querySelectorAll("tbody tr")].map(row => ({
+        time: row.cells[1].querySelector(".time-value")?.textContent || "",
+        burp: row.cells[2].querySelector("input").checked,
+        milk: row.cells[3].querySelector("select").value,
+        diaper: row.cells[4].querySelector("select").value
+    }));
+}
+
+function saveData(){
+    const data = {
+        currentPage,
+        pages: pages.map(page => ({
+            date: page.dataset.date,
+            rows: getPageRows(page)
+        }))
+    };
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function loadData(){
+    loadingData = true;
+
+    try{
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+
+        if(saved?.pages?.length){
+            $("#pages").replaceChildren();
+            pages = [];
+
+            saved.pages.forEach((pageData,index) => {
+                // Supports the older array-only save format too.
+                if(Array.isArray(pageData)){
+                    const date = new Date();
+                    date.setDate(date.getDate() + index);
+                    createPage(dateKey(date), pageData);
+                }else{
+                    createPage(pageData.date || dateKey(new Date()), pageData.rows || []);
+                }
+            });
+
+            currentPage = Math.min(saved.currentPage || 0, pages.length - 1);
+        }else{
+            createPage();
+            currentPage = 0;
+        }
+    }catch(error){
+        console.warn("Could not load saved data:", error);
+        $("#pages").replaceChildren();
+        pages = [];
+        createPage();
+        currentPage = 0;
+    }
+
+    loadingData = false;
+    showPage(currentPage);
+    saveData();
+}
+
+function addNextPage(){
+    const lastPage = pages[pages.length - 1];
+    const nextDate = new Date(lastPage.dataset.date);
+    nextDate.setDate(nextDate.getDate() + 1);
+
+    createPage(dateKey(nextDate));
+    showPage(pages.length - 1);
+    saveData();
 }
 
 function deleteCurrentPage(){
+    if(!pages.length) return;
 
-    // Don't allow deleting the only page
-    if (pages.length === 1){
-        alert("Cannot delete the only page.");
+    if(pages.length === 1){
+        if(!confirm("Clear all records on this page?\n清除此页面的所有记录？")) return;
+
+        const page = pages[0];
+        page.querySelector("tbody").replaceChildren();
+        addRowToPage(page, {}, false);
+        currentPage = 0;
+
+        showPage(0);
+        saveData();
         return;
     }
 
-    // Confirm deletion
-    if (!confirm("Delete this page?")){
-        return;
-    }
+    if(!confirm("Delete this page and all its records?\n删除此页面及所有记录？")) return;
 
-    // Remove the current page from the DOM
-    pages[currentPage].remove();
-
-    // Remove it from the pages array
+    const deletedPage = pages[currentPage];
+    deletedPage.remove();
     pages.splice(currentPage, 1);
 
-    // If we deleted the last page, move to the previous one
-    if (currentPage >= pages.length){
-        currentPage = pages.length - 1;
-    }
+    currentPage = Math.min(currentPage, pages.length - 1);
 
-    // Renumber all page dates
-    updateAllPageDates();
-
-    // Show the current page
     showPage(currentPage);
-
-    // Save everything
     saveData();
 }
 
-function updateMilkTotal(){
+$("#addBtn").addEventListener("click", () => {
+    addRowToPage(pages[currentPage]);
+    window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"});
+});
 
-    let table = pages[currentPage].querySelector("table");
-    let milkSelects = table.querySelectorAll("tbody td:nth-child(4) select");
-    let diaperSelects = table.querySelectorAll("tbody td:nth-child(5) select");
+$("#prevPageBtn").addEventListener("click", () => {
+    showPage(currentPage - 1);
+    window.scrollTo({top:0,behavior:"smooth"});
+});
 
-    let total = 0;
+$("#nextPageBtn").addEventListener("click", () => {
+    if(currentPage < pages.length - 1){
+        showPage(currentPage + 1);
+    }else{
+        addNextPage();
+    }
+    window.scrollTo({top:0,behavior:"smooth"});
+});
 
-    milkSelects.forEach(select=>{
-        total += Number(select.value);
-    });
+$("#deletePageBtn").addEventListener("click", deleteCurrentPage);
 
-const milkTotal = table.querySelector(".milkTotal");
-
-if(total >= 720){
-
-    milkTotal.innerHTML =
-        '<span class="milkSuccess">' + total + ' ML ✅</span>';
-
-}else{
-
-    milkTotal.innerHTML =
-        '<span class="milkWarning">' + total + ' ML ❌</span>';
-}
-
-    // Count number of ***** entries
-let poopCount = 0;
-
-diaperSelects.forEach(select => {
-    if (select.value === "Poop/大便") {
-        poopCount++;
+$("#fullscreenBtn").addEventListener("click", async () => {
+    if(document.fullscreenElement){
+        await document.exitFullscreen();
+    }else{
+        await document.documentElement.requestFullscreen();
     }
 });
 
-table.querySelector(".poopStatus").innerHTML =
-    "Pooped " + poopCount + " time" + (poopCount > 1 ? "s" : "") + " today."
-    + "<br>今天大便" + poopCount + "次。";
-}
-
-
-
-function updateAllPageDates(){
-
-    const today = new Date();
-    today.setHours(0,0,0,0);
-
-    const lastIndex = pages.length - 1;
-
-    pages.forEach((page,index)=>{
-
-        const d = new Date(today);
-
-        // Difference from last page
-        d.setDate(today.getDate() - (lastIndex - index));
-
-        const dateDiv = page.querySelector(".tableDate");
-
-        dateDiv.dataset.date = d.toISOString();
-
-        dateDiv.innerHTML =
-            "DATE: " +
-            d.toLocaleDateString("en-GB",{
-                day:"2-digit",
-                month:"2-digit",
-                year:"numeric"
-            });
-    });
-
-    saveData();
-}
-
-function addRow(save = true){
-
-    let tbody = pages[currentPage].querySelector("tbody");
-
-    let row=document.createElement("tr");
-    
-    // Line Number
-    let numberCell=document.createElement("td");
-
-    let lineNumber = tbody.rows.length + 1;
-    numberCell.innerHTML = lineNumber;
-
-    row.appendChild(numberCell);
-
-    // Time button
-    let timeCell=document.createElement("td");
-    timeCell.appendChild(createTimeButton());
-    row.appendChild(timeCell);
-    
-    // Burp checkbox
-    let burpCell=document.createElement("td");
-
-    let burpCheckbox=document.createElement("input");
-    burpCheckbox.type="checkbox";
-    burpCheckbox.onchange = saveData;
-
-    burpCell.style.textAlign="center";
-    burpCell.appendChild(burpCheckbox);
-
-    row.appendChild(burpCell);
-
-/*    // Milk dropdown
-    let milkCell=document.createElement("td");
-
-    let milkSelect=createMilkSelect(milk);
-    
-    milkSelect.onchange=function(){
-    updateMilkTotal();
-    saveData();
-};
-    
-    milkCell.appendChild(milkSelect);
-    row.appendChild(milkCell);*/
-
-// Milk dropdown
-let milkCell = document.createElement("td");
-
-let milkSelect = createMilkSelect(milk);
-
-milkSelect.onchange = function(){
-
-    // User chooses Custom ML
-    if(milkSelect.value === "custom"){
-
-        let customML = prompt(
-            "Enter milk amount in ML:\n请输入奶量（ML）："
-        );
-
-        // Cancel or empty input
-        if(customML === null || customML.trim() === ""){
-
-            milkSelect.value = "0";
-
-        } else {
-
-            let amount = Number(customML);
-
-            // Validate input
-            if(isNaN(amount) || amount < 0){
-
-                alert(
-                    "Please enter a valid ML amount.\n请输入有效的奶量。"
-                );
-
-                milkSelect.value = "0";
-
-            } else {
-
-                // Add the typed amount into the dropdown
-                let existingOption = [...milkSelect.options].find(
-                    option => option.value === String(amount)
-                );
-
-                if(existingOption){
-
-                    milkSelect.value = String(amount);
-
-                } else {
-
-                    let customOption = document.createElement("option");
-
-                    customOption.text = amount + " ML";
-                    customOption.value = amount;
-
-                    // Insert before Custom ML option
-                    milkSelect.insertBefore(
-                        customOption,
-                        milkSelect.querySelector('option[value="custom"]')
-                    );
-
-                    milkSelect.value = String(amount);
-                }
-            }
-        }
-    }
-
-    updateMilkTotal();
-    saveData();
-};
-
-milkCell.appendChild(milkSelect);
-row.appendChild(milkCell);
-
-// Diaper dropdown
-let diaperCell = document.createElement("td");
-let diaperSelect = createSelect(diaper);
-
-diaperSelect.onchange = function(){
-    updateMilkTotal();
-    saveData();
-};
-
-diaperCell.appendChild(diaperSelect);
-row.appendChild(diaperCell);   
-
-// Clear button
-let clearCell = document.createElement("td");
-
-let clearBtn = document.createElement("button");
-clearBtn.innerHTML = "Clear<br>清除";
-
-clearBtn.onclick = function () {
-
-    // Restore Time button
-    let timeCell = row.cells[1];
-    timeCell.innerHTML = "";
-    timeCell.appendChild(createTimeButton());
-
-    // Uncheck burp
-    row.cells[2].querySelector("input").checked = false;
-
-    // Reset milk to Medicine (0 ML)
-    row.cells[3].querySelector("select").value = "0";
-
-    // Reset diaper to first option
-    row.cells[4].querySelector("select").selectedIndex = 0;
-
-    updateMilkTotal();
-    saveData();
-};
-
-clearCell.appendChild(clearBtn);
-let deleteBtn = document.createElement("button");
-deleteBtn.innerHTML = "Delete<br>删除";
-deleteBtn.style.marginTop = "5px";
-deleteBtn.style.backgroundColor = "#FFC5D3";
-
-deleteBtn.onclick = function () {
-
-    if (!confirm("Delete this row?")) return;
-
-    row.remove();
-
-    // Renumber line numbers
-    [...tbody.rows].forEach((r, i) => {
-        r.cells[0].textContent = i + 1;
-    });
-
-    updateMilkTotal();
-    saveData();
-};
-
-clearCell.appendChild(document.createElement("br"));
-clearCell.appendChild(deleteBtn);
-row.appendChild(clearCell);
-
-tbody.appendChild(row);
-updateMilkTotal();
-
-if (save) {
-    saveData();
-}
-
-    // Automatically scroll to bottom after adding row
-setTimeout(() => {
-    window.scrollTo({
-        top: document.body.scrollHeight,
-        behavior: "smooth"
-    });
-}, 100);
-}
-
-function isNextDayPage(){
-
-    const today = new Date();
-    today.setHours(0,0,0,0);
-
-    const pageDate = new Date(
-        pages[currentPage]
-        .querySelector(".tableDate")
-        .dataset.date
-    );
-
-    pageDate.setHours(0,0,0,0);
-
-    return pageDate < today;
-}
-
-document.getElementById("add").onclick = function () {
-
-    const now = new Date();
-
-    // Only trigger if this page is an older date
-    // AND the current time is 1:00 AM or later
-    if (isNextDayPage() && now.getHours() >= 1) {
-
-        document.getElementById("add").style.display = "none";
-
-        alert(
-            "🌸 It's a new day! ✨\n\nPlease click 'Next Page' and add your new row there. 💕\n\n🌸 新的一天开始啦！✨\n请点击“下一页”并在那里添加新的记录。💕"
-        );
-
-        return;
-    }
-
-    addRow();
-
-};
-document.getElementById("nextPage").onclick = function () {
-
-    // If the next page already exists, just go to it.
-    if (currentPage < pages.length - 1) {
-
-        showPage(currentPage + 1);
-
-    } else {
-
-        // Today's date
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        // Last page's saved date
-        const lastDate = new Date(
-            pages[pages.length - 1]
-                .querySelector(".tableDate")
-                .dataset.date
-        );
-        lastDate.setHours(0, 0, 0, 0);
-
-        // If today is later than the last page, use today's date.
-        // Otherwise, create the next calendar day.
-        let newPageDate;
-
-        if (today > lastDate) {
-            newPageDate = today;
-        } else {
-            newPageDate = new Date(lastDate);
-            newPageDate.setDate(newPageDate.getDate() + 1);
-        }
-
-        createPage(newPageDate.toISOString());
-        addRow();
-        saveData();
-    }
-
-    document.getElementById("add").style.display = "inline-block";
-
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-    });
-
-};
-document.getElementById("prevPage").onclick = function(){
-
-    if(currentPage > 0){
-        showPage(currentPage - 1);
-
-        window.scrollTo({
-            top:0,
-            behavior:"smooth"
-        });
-    }
-
-};
+document.addEventListener("fullscreenchange", () => {
+    $("#fullscreenBtn").textContent = document.fullscreenElement ? "✕" : "⛶";
+});
 
 loadData();
-updateAllPageDates();
-
 </script>
-
 </body>
 </html>
