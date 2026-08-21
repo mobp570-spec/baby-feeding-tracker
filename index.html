@@ -379,7 +379,7 @@ const milk = [90,120,150];
 
     return button; } */
 
-function createTimeButton(){
+/*function createTimeButton(){
 
     let container = document.createElement("div");
     container.style.display = "flex";
@@ -506,6 +506,164 @@ function createTimeButton(){
 
     container.appendChild(button);
     container.appendChild(manualTime);
+
+    return container;
+}*/
+
+function createTimeButton(){
+
+    let container = document.createElement("div");
+    container.style.display = "flex";
+    container.style.flexDirection = "column";
+    container.style.gap = "6px";
+    container.style.alignItems = "center";
+
+    // Automatic current time button
+    let button = document.createElement("button");
+    button.innerHTML = "Log Time<br>记录时间";
+
+    button.onclick = function(){
+
+        let now = new Date();
+
+        let time = now.toLocaleTimeString([], {
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true
+        });
+
+        let text = document.createElement("span");
+        text.textContent = time;
+
+        container.parentNode.replaceChild(text, container);
+        saveData();
+    };
+
+
+    // ===== ONE MANUAL TIME BOX =====
+    let manualBox = document.createElement("div");
+
+    manualBox.style.display = "flex";
+    manualBox.style.alignItems = "center";
+    manualBox.style.justifyContent = "center";
+    manualBox.style.gap = "3px";
+    manualBox.style.padding = "6px";
+    manualBox.style.background = "#FFF5F8";
+    manualBox.style.border = "1px solid #F5B6C8";
+    manualBox.style.borderRadius = "10px";
+    manualBox.style.width = "fit-content";
+
+
+    // Hour
+    let hourSelect = document.createElement("select");
+    hourSelect.style.width = "48px";
+    hourSelect.style.padding = "5px";
+    hourSelect.style.fontSize = "13px";
+    hourSelect.style.border = "none";
+    hourSelect.style.background = "transparent";
+
+    let hourPlaceholder = document.createElement("option");
+    hourPlaceholder.text = "HH";
+    hourPlaceholder.value = "";
+    hourSelect.appendChild(hourPlaceholder);
+
+    for(let i = 1; i <= 12; i++){
+        let option = document.createElement("option");
+        option.value = i;
+        option.text = i;
+        hourSelect.appendChild(option);
+    }
+
+
+    // Colon
+    let colon = document.createElement("span");
+    colon.textContent = ":";
+    colon.style.fontWeight = "bold";
+
+
+    // Minute
+    let minuteSelect = document.createElement("select");
+    minuteSelect.style.width = "52px";
+    minuteSelect.style.padding = "5px";
+    minuteSelect.style.fontSize = "13px";
+    minuteSelect.style.border = "none";
+    minuteSelect.style.background = "transparent";
+
+    let minutePlaceholder = document.createElement("option");
+    minutePlaceholder.text = "MM";
+    minutePlaceholder.value = "";
+    minuteSelect.appendChild(minutePlaceholder);
+
+    for(let i = 0; i < 60; i++){
+        let option = document.createElement("option");
+
+        let minute = String(i).padStart(2, "0");
+
+        option.value = minute;
+        option.text = minute;
+
+        minuteSelect.appendChild(option);
+    }
+
+
+    // AM / PM
+    let ampmSelect = document.createElement("select");
+    ampmSelect.style.width = "58px";
+    ampmSelect.style.padding = "5px";
+    ampmSelect.style.fontSize = "13px";
+    ampmSelect.style.border = "none";
+    ampmSelect.style.background = "transparent";
+
+    ["AM", "PM"].forEach(period => {
+        let option = document.createElement("option");
+        option.value = period;
+        option.text = period;
+        ampmSelect.appendChild(option);
+    });
+
+
+    // Set button
+    let setTimeBtn = document.createElement("button");
+    setTimeBtn.textContent = "✓";
+    setTimeBtn.style.padding = "5px 8px";
+    setTimeBtn.style.margin = "0";
+    setTimeBtn.style.fontSize = "14px";
+    setTimeBtn.style.borderRadius = "7px";
+
+
+    setTimeBtn.onclick = function(){
+
+        let hour = hourSelect.value;
+        let minute = minuteSelect.value;
+        let ampm = ampmSelect.value;
+
+        if(hour === "" || minute === ""){
+
+            alert("Please select the time.\n请选择时间。");
+            return;
+        }
+
+        let time = hour + ":" + minute + " " + ampm;
+
+        let text = document.createElement("span");
+        text.textContent = time;
+        text.style.fontWeight = "bold";
+
+        container.parentNode.replaceChild(text, container);
+
+        saveData();
+    };
+
+
+    // Put everything inside ONE box
+    manualBox.appendChild(hourSelect);
+    manualBox.appendChild(colon);
+    manualBox.appendChild(minuteSelect);
+    manualBox.appendChild(ampmSelect);
+    manualBox.appendChild(setTimeBtn);
+
+    container.appendChild(button);
+    container.appendChild(manualBox);
 
     return container;
 }
